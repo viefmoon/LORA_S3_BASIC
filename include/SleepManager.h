@@ -25,14 +25,14 @@ public:
      * @param radio Puntero al módulo de radio LoRa
      * @param node Referencia al nodo LoRaWAN para guardar sesión
      * @param LWsession Buffer para almacenar la sesión LoRaWAN
-     * @param spi Referencia al objeto SPI
+     * @param spiLora Referencia al objeto SPI para LoRa
      */
     static void goToDeepSleep(uint32_t timeToSleep, 
                              PowerManager& powerManager,
                              SX1262* radio,
                              LoRaWANNode& node,
                              uint8_t* LWsession,
-                             SPIClass& spi);
+                             SPIClass& spiLora);
     
     /**
      * @brief Configura los pines no utilizados en alta impedancia para reducir el consumo durante deep sleep.

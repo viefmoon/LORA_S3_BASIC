@@ -8,7 +8,7 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
                                SX1262* radio,
                                LoRaWANNode& node,
                                uint8_t* LWsession,
-                               SPIClass& spi) {
+                               SPIClass& spiLora) {
     // Guardar sesión en RTC y otras rutinas de apagado
     uint8_t *persist = node.getBufferSession();
     memcpy(LWsession, persist, RADIOLIB_LORAWAN_SESSION_BUF_SIZE);
@@ -24,10 +24,9 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
     LoRaManager::prepareForSleep(radio);
     btStop();
 
-
     // Deshabilitar I2C y SPI
     Wire.end();
-    spi.end();
+    spiLora.end();
     
     // Configurar el temporizador y GPIO para despertar
     esp_sleep_enable_timer_wakeup(timeToSleep * 1000000ULL);

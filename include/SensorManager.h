@@ -6,20 +6,18 @@
 #include "sensor_types.h"
 #include <ESP32Time.h>
 #include "PowerManager.h"
-#include "MAX31865.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "SHT31.h"
 #include "ModbusSensorManager.h"
 #include "sensors/NtcManager.h"
+#include <SPI.h>
 
 // Variables y objetos globales declarados en main.cpp
 extern ESP32Time rtc;
 extern PowerManager powerManager;
-extern SPIClass spi;
+extern SPIClass spiLora;
 extern SPISettings spiAdcSettings;
-extern SPISettings spiRtdSettings;
-extern MAX31865_RTD rtd;
 extern OneWire oneWire;
 extern DallasTemperature dallasTemp;
 extern SHT31 sht30Sensor;

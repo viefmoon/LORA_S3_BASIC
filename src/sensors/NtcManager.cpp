@@ -99,30 +99,28 @@ double NtcManager::readNtc100kTemperature(const char* configKey) {
     // Seleccionar el pin correcto según el configKey
     int ntcPin = -1;
     if (strcmp(configKey, "0") == 0) {
-        DEBUG_PRINTLN("NTC100K 0");
         ntcPin = NTC100K_0_PIN;
     } else if (strcmp(configKey, "1") == 0) {
-        DEBUG_PRINTLN("NTC100K 1");
         ntcPin = NTC100K_1_PIN;
     } else {
         // Si no coincide con ninguna configuración, retornamos NAN
         return NAN;
     }
 
-    // Leer el valor analógico
+    //  
     int adcValue = analogReadMilliVolts(ntcPin);
-    DEBUG_PRINTLN("adcValue: " + String(adcValue));
     
-    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
-    float voltage = adcValue;
+    // Usar directamente el valor en milivoltios, convertido a voltios
+    float voltage = adcValue / 1000.0f;
     
-    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
+    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.0f) {
         return NAN;
     }
 
     // El NTC100K está conectado como parte de un divisor de voltaje:
-    // 3.3V --- NTC100K --- [Punto de medición] --- 100K --- GND
-    double vRef = 3.3; // Voltaje de referencia
+    // 3V --- NTC100K --- [Punto de medición] --- 100K --- GND
+    // A mayor temperatura, menor resistencia del NTC, mayor voltaje en el punto de medición
+    double vRef = 3.0; // Voltaje de referencia (3V)
     double rFixed = 100000.0; // Resistencia fija (100k)
     bool ntcTop = true; // NTC está conectado a Vref (arriba)
     
@@ -158,18 +156,19 @@ double NtcManager::readNtc10kTemperature() {
     double A=0, B=0, C=0;
     calculateSteinhartHartCoeffs(T1K, r1, T2K, r2, T3K, r3, A, B, C);
 
-    // Leer el valor analógico del pin NTC10K
-    int adcValue = analogRead(NTC10K_PIN);
+    // Leer el valor analógico del pin NTC10K usando analogReadMilliVolts
+    int adcValue = analogReadMilliVolts(NTC10K_PIN);
     
-    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
-    float voltage = adcValue * (3.3f / 4095.0f);
+    // Convertir de milivoltios a voltios
+    float voltage = adcValue / 1000.0f;
     
-    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
+    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.0f) {
         return NAN;
     }
 
-    // El NTC10K está conectado entre 3.3V y el punto medio con resistencia de 10k a GND
-    double vRef = 3.3; // Voltaje de referencia
+    // El NTC10K está conectado entre 3V y el punto medio con resistencia de 10k a GND
+    // A mayor temperatura, menor resistencia del NTC, mayor voltaje en el punto de medición
+    double vRef = 3.0; // Voltaje de referencia (3V)
     double rFixed = 10000.0; // Resistencia fija (10k)
     bool ntcTop = true; // NTC está conectado a Vref (arriba)
     

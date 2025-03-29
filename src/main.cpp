@@ -11,7 +11,6 @@
 #include "config.h"
 #include "debug.h"
 #include "PowerManager.h"
-#include "MAX31865.h"
 #include <RadioLib.h>
 #include <ESP32Time.h>
 #include "sensor_types.h"
@@ -29,6 +28,7 @@
 #include "HardwareManager.h"
 #include "SleepManager.h"
 #include "SHT31.h"
+#include <Adafruit_MAX31865.h>
 //--------------------------------------------------------------------------------------------
 // Variables globales
 //--------------------------------------------------------------------------------------------
@@ -49,14 +49,14 @@ std::vector<ModbusSensorConfig> enabledModbusSensors;
 ESP32Time rtc;
 PowerManager powerManager;
 
-SPIClass spi(FSPI);
-SPISettings spiRtdSettings(SPI_RTD_CLOCK, MSBFIRST, SPI_MODE1);
+SPIClass spiLora(FSPI);
 SPISettings spiRadioSettings(SPI_LORA_CLOCK, MSBFIRST, SPI_MODE0);
 
-MAX31865_RTD rtd(MAX31865_RTD::RTD_PT100, spi, spiRtdSettings, PT100_CS_PIN);
+Adafruit_MAX31865 thermo = Adafruit_MAX31865(PT100_CS_PIN, SPI_MOSI_PIN, SPI_MISO_PIN, SPI_SCK_PIN);
+
 SHT31 sht30Sensor(0x44, &Wire);
 
-SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN, spi, spiRadioSettings);
+SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN, spiLora, spiRadioSettings);
 LoRaWANNode node(&radio, &Region, subBand);
 
 OneWire oneWire(ONE_WIRE_BUS);
@@ -73,6 +73,8 @@ Preferences store;
 void setup() {
     // setupStartTime = millis(); // Inicia el contador de tiempo
     DEBUG_BEGIN(SERIAL_BAUD_RATE);
+
+    thermo.begin(MAX31865_4WIRE);
 
     SleepManager::releaseHeldPins();
 
@@ -92,9 +94,9 @@ void setup() {
     enabledModbusSensors = ConfigManager::getEnabledModbusSensorConfigs();
 
     // Inicialización de hardware
-    if (!HardwareManager::initHardware(powerManager, sht30Sensor, spi, enabledNormalSensors)) {
+    if (!HardwareManager::initHardware(powerManager, sht30Sensor, spiLora, enabledNormalSensors)) {
         DEBUG_PRINTLN("Error en la inicialización del hardware");
-        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
+        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
 
     // Configuración de pines de modo config
@@ -123,7 +125,7 @@ void setup() {
     int16_t state = radio.begin();
     if (state != RADIOLIB_ERR_NONE) {
         DEBUG_PRINTF("Error iniciando radio: %d\n", state);
-        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
+        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
 
     // Activar LoRaWAN
@@ -131,7 +133,7 @@ void setup() {
     if (state != RADIOLIB_LORAWAN_NEW_SESSION && 
         state != RADIOLIB_LORAWAN_SESSION_RESTORED) {
         DEBUG_PRINTF("Error activando LoRaWAN o sincronizando RTC: %d\n", state);
-        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
+        SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
 }
 
@@ -139,6 +141,42 @@ void setup() {
 // loop()
 //--------------------------------------------------------------------------------------------
 void loop() {
+
+    uint16_t rtd = thermo.readRTD();
+
+  Serial.print("RTD value: "); Serial.println(rtd);
+  float ratio = rtd;
+  ratio /= 32768;
+  Serial.print("Ratio = "); Serial.println(ratio,8);
+  Serial.print("Resistance = "); Serial.println(RREF*ratio,8);
+  Serial.print("Temperature = "); Serial.println(thermo.temperature(RNOMINAL, RREF));
+
+  // Check and print any faults
+  uint8_t fault = thermo.readFault();
+  if (fault) {
+    Serial.print("Fault 0x"); Serial.println(fault, HEX);
+    if (fault & MAX31865_FAULT_HIGHTHRESH) {
+      Serial.println("RTD High Threshold"); 
+    }
+    if (fault & MAX31865_FAULT_LOWTHRESH) {
+      Serial.println("RTD Low Threshold"); 
+    }
+    if (fault & MAX31865_FAULT_REFINLOW) {
+      Serial.println("REFIN- > 0.85 x Bias"); 
+    }
+    if (fault & MAX31865_FAULT_REFINHIGH) {
+      Serial.println("REFIN- < 0.85 x Bias - FORCE- open"); 
+    }
+    if (fault & MAX31865_FAULT_RTDINLOW) {
+      Serial.println("RTDIN- < 0.85 x Bias - FORCE- open"); 
+    }
+    if (fault & MAX31865_FAULT_OVUV) {
+      Serial.println("Under/Over voltage"); 
+    }
+    thermo.clearFault();
+  }
+  Serial.println();
+  delay(1000);
 
     // Verificar si se mantiene presionado para modo config
     if (BLEHandler::checkConfigMode()) {
@@ -159,5 +197,5 @@ void loop() {
     delay(10);
 
     // Dormir
-    SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spi);
+    SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
 }

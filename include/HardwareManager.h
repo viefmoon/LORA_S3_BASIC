@@ -23,12 +23,12 @@ public:
      * @param ioExpander Referencia al expansor de I/O
      * @param powerManager Referencia al gestor de energía
      * @param sht30Sensor Referencia al sensor SHT30
-     * @param spi Referencia a la interfaz SPI
+     * @param spiLora Referencia a la interfaz SPI para LoRa
      * @param enabledNormalSensors Vector con las configuraciones de sensores habilitados
      * @return true si la inicialización fue exitosa, false en caso contrario
      */
     static bool initHardware(PowerManager& powerManager, 
-                           SHT31& sht30Sensor, SPIClass& spi,
+                           SHT31& sht30Sensor, SPIClass& spiLora,
                            const std::vector<SensorConfig>& enabledNormalSensors);
 
     /**

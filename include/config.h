@@ -31,6 +31,11 @@
 #define LORA_DIO1_PIN           14
 #define MAX_LORA_PAYLOAD        200
 
+// SPI PARA RTD
+#define SPI_SCK_PIN        39
+#define SPI_MISO_PIN       40
+#define SPI_MOSI_PIN       41
+
 // SPI Clock
 #define SPI_LORA_CLOCK       1000000
 #define SPI_RTD_CLOCK        1000000
@@ -232,5 +237,9 @@ const double conversionFactor = (R1 + R2) / R1;
 // Límites de temperatura NTC para evitar lecturas erróneas cuando esta desconectado
 #define NTC_TEMP_MIN           -20.0   // Temperatura mínima válida en °C
 #define NTC_TEMP_MAX            100.0   // Temperatura máxima válida en °C
+
+// Configuración MAX31865 para RTD (PT100/PT1000)
+#define RREF      430.0         // Resistencia de referencia en ohms
+#define RNOMINAL  100.0         // Resistencia nominal del sensor a 0°C (100.0 para PT100, 1000.0 para PT1000)
 
 #endif // CONFIG_H

@@ -3,7 +3,6 @@
 #include <SPI.h>
 #include <cmath>  // Para fabs() y otras funciones matemáticas
 #include <DallasTemperature.h>
-#include "MAX31865.h"
 #include "sensor_types.h"
 #include "config.h"
 #include <Preferences.h>
@@ -19,7 +18,6 @@
 // Se eliminó la variable externa ADC
 
 // Inclusión de nuevos sensores
-#include "sensors/RTDSensor.h"
 #include "sensors/SHT30Sensor.h"
 #include "sensors/DS18B20Sensor.h"
 
@@ -30,21 +28,6 @@
 void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalSensors) {
     // Encender alimentación 3.3V
     powerManager.power3V3On();
-    
-    // Inicializar RTD y configurarlo
-    rtd.begin();
-    {
-        bool vBias = true;
-        bool autoConvert = true;
-        bool oneShot = false;
-        bool threeWire = false;
-        uint8_t faultCycle = 0; // MAX31865_FAULT_DETECTION_NONE
-        bool faultClear = true;
-        bool filter50Hz = true;
-        uint16_t lowTh = 0x0000;
-        uint16_t highTh = 0x7fff;
-        rtd.configure(vBias, autoConvert, oneShot, threeWire, faultCycle, faultClear, filter50Hz, lowTh, highTh);
-    }
 
     // Verificar si hay algún sensor DS18B20
     bool ds18b20SensorEnabled = false;
@@ -81,11 +64,9 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Soil Humidity Sensor
     pinMode(SOILH_SENSOR_PIN, INPUT);
 
-    delay(1000);
-
     // Configurar ADC interno
-    analogReadResolution(12); // Resolución de 12 bits (0-4095)
-    //analogSetAttenuation(ADC_11db); // Atenuación para medir hasta 3.3V
+    analogReadResolution(13); // Resolución de 12 bits (0-4095)
+    analogSetAttenuation(ADC_11db); // Atenuación para medir hasta 3.3V
 }
 
 SensorReading SensorManager::getSensorReading(const SensorConfig &cfg) {
@@ -149,7 +130,7 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
             break;
 
         case RTD:
-            reading.value = RTDSensor::read();
+            //reading.value = RTDSensor::read();
             break;
 
         case DS18B20:
