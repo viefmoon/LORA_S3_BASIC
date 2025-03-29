@@ -10,6 +10,10 @@ bool HardwareManager::initHardware(PowerManager& powerManager, SHT31& sht30Senso
     // Configurar GPIO one wire con pull-up
     pinMode(ONE_WIRE_BUS, INPUT_PULLUP);
     
+    // Inicializar el pin de control de batería y desactivar la medición
+    pinMode(BATTERY_CONTROL_PIN, OUTPUT);
+    digitalWrite(BATTERY_CONTROL_PIN, HIGH);
+    
     // Verificar si hay algún sensor SHT30
     bool sht30SensorEnabled = false;
     for (const auto& sensor : enabledNormalSensors) {

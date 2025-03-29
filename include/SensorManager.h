@@ -12,6 +12,7 @@
 #include "ModbusSensorManager.h"
 #include "sensors/NtcManager.h"
 #include <SPI.h>
+#include <Adafruit_MAX31865.h>
 
 // Variables y objetos globales declarados en main.cpp
 extern ESP32Time rtc;
@@ -21,6 +22,7 @@ extern SPISettings spiAdcSettings;
 extern OneWire oneWire;
 extern DallasTemperature dallasTemp;
 extern SHT31 sht30Sensor;
+extern Adafruit_MAX31865 rtdSensor;
 
 /**
  * @brief Clase que maneja la inicialización y lecturas de todos los sensores

@@ -13,6 +13,10 @@ public:
     /**
      * @brief Lee el voltaje de la batería
      * 
+     * Activa el pin de control BATTERY_CONTROL_PIN para habilitar
+     * la medición a través del divisor de voltaje y luego lo desactiva
+     * para ahorrar energía.
+     * 
      * @return float Voltaje de la batería en voltios, o NAN si hay error
      */
     static float readVoltage();
@@ -23,15 +27,12 @@ private:
      * 
      * El circuito es un divisor de voltaje:
      * 
-     * Batería (+) ---- R2 ---- | ---- R1 ---- GND
-     *                          |
-     *                          +--- ADC Pin
+     * Batería (+) ---- R2 (390k) ---- | ---- R1 (100k) ---- GND
+     *                                 |
+     *                                 +--- ADC Pin
      * 
-     * Donde:
-     * - R2 es la resistencia de arriba (conectada a la batería)
-     * - R1 es la resistencia de abajo (conectada a GND)
-     * - La tensión medida por el ADC es V_adc = V_bat * R1 / (R1 + R2)
-     * - Por lo tanto, V_bat = V_adc * (R1 + R2) / R1
+     * La fórmula es:
+     * VBAT = VADC_IN1 / (R1 / (R1 + R2))
      * 
      * @param adcVoltage Voltaje medido por el ADC
      * @return float Voltaje real de la batería

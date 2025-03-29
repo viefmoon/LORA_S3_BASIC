@@ -52,7 +52,7 @@ PowerManager powerManager;
 SPIClass spiLora(FSPI);
 SPISettings spiRadioSettings(SPI_LORA_CLOCK, MSBFIRST, SPI_MODE0);
 
-Adafruit_MAX31865 thermo = Adafruit_MAX31865(PT100_CS_PIN, SPI_MOSI_PIN, SPI_MISO_PIN, SPI_SCK_PIN);
+Adafruit_MAX31865 rtdSensor = Adafruit_MAX31865(PT100_CS_PIN, SPI_MOSI_PIN, SPI_MISO_PIN, SPI_SCK_PIN);
 
 SHT31 sht30Sensor(0x44, &Wire);
 
@@ -73,8 +73,6 @@ Preferences store;
 void setup() {
     // setupStartTime = millis(); // Inicia el contador de tiempo
     DEBUG_BEGIN(SERIAL_BAUD_RATE);
-
-    thermo.begin(MAX31865_4WIRE);
 
     SleepManager::releaseHeldPins();
 
@@ -141,42 +139,6 @@ void setup() {
 // loop()
 //--------------------------------------------------------------------------------------------
 void loop() {
-
-    uint16_t rtd = thermo.readRTD();
-
-  Serial.print("RTD value: "); Serial.println(rtd);
-  float ratio = rtd;
-  ratio /= 32768;
-  Serial.print("Ratio = "); Serial.println(ratio,8);
-  Serial.print("Resistance = "); Serial.println(RREF*ratio,8);
-  Serial.print("Temperature = "); Serial.println(thermo.temperature(RNOMINAL, RREF));
-
-  // Check and print any faults
-  uint8_t fault = thermo.readFault();
-  if (fault) {
-    Serial.print("Fault 0x"); Serial.println(fault, HEX);
-    if (fault & MAX31865_FAULT_HIGHTHRESH) {
-      Serial.println("RTD High Threshold"); 
-    }
-    if (fault & MAX31865_FAULT_LOWTHRESH) {
-      Serial.println("RTD Low Threshold"); 
-    }
-    if (fault & MAX31865_FAULT_REFINLOW) {
-      Serial.println("REFIN- > 0.85 x Bias"); 
-    }
-    if (fault & MAX31865_FAULT_REFINHIGH) {
-      Serial.println("REFIN- < 0.85 x Bias - FORCE- open"); 
-    }
-    if (fault & MAX31865_FAULT_RTDINLOW) {
-      Serial.println("RTDIN- < 0.85 x Bias - FORCE- open"); 
-    }
-    if (fault & MAX31865_FAULT_OVUV) {
-      Serial.println("Under/Over voltage"); 
-    }
-    thermo.clearFault();
-  }
-  Serial.println();
-  delay(1000);
 
     // Verificar si se mantiene presionado para modo config
     if (BLEHandler::checkConfigMode()) {

@@ -19,6 +19,7 @@
 #define COND_SENSOR_PIN     20  // IO20 
 #define HDS10_SENSOR_PIN    7  // IO7 
 #define BATTERY_SENSOR_PIN  1  // IO1 
+#define BATTERY_CONTROL_PIN 37 // Pin para activar medición de batería
 #define SOILH_SENSOR_PIN    2  // IO2 // Pin para el sensor de humedad del suelo
 
 // SPI PARA LORA
@@ -82,9 +83,9 @@
 #define BLE_DEVICE_PREFIX            "AGRICOS-"
 
 // Calibración batería
-const double R1 = 1000000.0;
-const double R2 = 1500000.0;
-const double conversionFactor = (R1 + R2) / R1;
+const double R1 = 100000.0;
+const double R2 = 390000.0;
+const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 
 // Namespaces
 #define NAMESPACE_SYSTEM        "system"

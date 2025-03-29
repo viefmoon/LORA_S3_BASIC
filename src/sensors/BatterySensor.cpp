@@ -7,11 +7,21 @@
  * @return float Voltaje de la batería en voltios, o NAN si hay error
  */
 float BatterySensor::readVoltage() {
-    // Leer el valor del pin analógico para la batería
-    int adcValue = analogRead(BATTERY_SENSOR_PIN);
+    // Activar el pin de control para habilitar la medición
+    pinMode(BATTERY_CONTROL_PIN, OUTPUT);
+    digitalWrite(BATTERY_CONTROL_PIN, LOW);
     
-    // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
-    float voltage = adcValue * (3.3f / 4095.0f);
+    // Esperar un breve momento para estabilizar la lectura
+    delay(10);
+    
+    // Leer el valor del pin analógico para la batería en milivoltios directamente
+    int milliVolts = analogReadMilliVolts(BATTERY_SENSOR_PIN);
+    
+    // Desactivar el pin de control para ahorrar energía
+    digitalWrite(BATTERY_CONTROL_PIN, HIGH);
+    
+    // Convertir de milivoltios a voltios
+    float voltage = milliVolts / 1000.0f;
     
     // Comprobar si el voltaje es válido
     if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
@@ -26,16 +36,16 @@ float BatterySensor::readVoltage() {
 /**
  * @brief Calcula el voltaje real de la batería a partir de la lectura del ADC
  * 
- * En config.h, las constantes están definidas como:
- * const double R1 = 470000.0;  // Resistencia conectada a GND
- * const double R2 = 1500000.0; // Resistencia conectada a la batería
+ * El circuito es un divisor de voltaje con:
+ * R1 = 100k (a GND)
+ * R2 = 390k (a batería)
+ * VBAT = VADC_IN1 * (R1 + R2) / R1 = VADC_IN1 * (100k + 390k) / 100k
  * 
  * @param adcVoltage Voltaje medido por el ADC
  * @return float Voltaje real de la batería
  */
 float BatterySensor::calculateBatteryVoltage(float adcVoltage) {
-    // Usando las constantes definidas en config.h
-    // El voltaje de la batería se calcula como:
-    // V_bat = V_adc * (R1 + R2) / R1
-    return adcVoltage * ((R1 + R2) / R1);
+    // VBAT = 100k / (100k+390k) * VADC_IN1 corregido a:
+    // VBAT = VADC_IN1 / (100k / (100k+390k))
+    return adcVoltage / (R1 / (R1 + R2));
 } 

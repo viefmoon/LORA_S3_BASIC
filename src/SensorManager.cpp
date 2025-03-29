@@ -28,6 +28,9 @@
 void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalSensors) {
     // Encender alimentación 3.3V
     powerManager.power3V3On();
+    
+    // Inicializar RTD con 4 cables
+    rtdSensor.begin(MAX31865_4WIRE);
 
     // Verificar si hay algún sensor DS18B20
     bool ds18b20SensorEnabled = false;
@@ -130,7 +133,19 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
             break;
 
         case RTD:
-            //reading.value = RTDSensor::read();
+            {
+                uint16_t rtdValue = rtdSensor.readRTD();
+                float temp = rtdSensor.temperature(RNOMINAL, RREF);
+                
+                // Verificar si hay errores
+                uint8_t fault = rtdSensor.readFault();
+                if (fault) {
+                    rtdSensor.clearFault();
+                    reading.value = NAN;
+                } else {
+                    reading.value = temp;
+                }
+            }
             break;
 
         case DS18B20:
