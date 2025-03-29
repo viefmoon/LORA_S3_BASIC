@@ -13,6 +13,11 @@ bool HardwareManager::initHardware(PowerManager& powerManager, SHT31& sht30Senso
     // Inicializar el pin de control de batería y desactivar la medición
     pinMode(BATTERY_CONTROL_PIN, OUTPUT);
     digitalWrite(BATTERY_CONTROL_PIN, HIGH);
+
+    // Configuración de pines de modo config
+    pinMode(CONFIG_PIN, INPUT);
+    digitalWrite(CONFIG_PIN, HIGH);
+    pinMode(CONFIG_LED_PIN, OUTPUT);
     
     // Verificar si hay algún sensor SHT30
     bool sht30SensorEnabled = false;
@@ -40,7 +45,7 @@ bool HardwareManager::initHardware(PowerManager& powerManager, SHT31& sht30Senso
     // Inicializar los pines de selección SPI (SS)
     initializeSPISSPins();
     
-    // Inicializar PowerManager para control de energía
+    //Inicializar PowerManager para control de energía
     powerManager.begin();
     
     return true;

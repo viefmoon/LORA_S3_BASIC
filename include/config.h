@@ -56,7 +56,7 @@
 #define SERIAL_BAUD_RATE         115200
 
 // Deep Sleep
-#define DEFAULT_TIME_TO_SLEEP   30
+#define DEFAULT_TIME_TO_SLEEP   10
 
 // Identificadores
 #define DEFAULT_DEVICE_ID   "DEV01"

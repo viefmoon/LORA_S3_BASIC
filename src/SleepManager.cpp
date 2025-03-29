@@ -30,13 +30,15 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
     
     // Configurar el temporizador y GPIO para despertar
     esp_sleep_enable_timer_wakeup(timeToSleep * 1000000ULL);
-    gpio_wakeup_enable((gpio_num_t)CONFIG_PIN, GPIO_INTR_LOW_LEVEL);
-    esp_sleep_enable_gpio_wakeup();
-    esp_sleep_enable_ext0_wakeup((gpio_num_t)CONFIG_PIN, 0); // 0 para nivel bajo
+    // gpio_wakeup_enable((gpio_num_t)CONFIG_PIN, GPIO_INTR_LOW_LEVEL);
+    // esp_sleep_enable_gpio_wakeup();
+    // esp_sleep_enable_ext0_wakeup((gpio_num_t)CONFIG_PIN, 0); // 0 para nivel bajo
     
-    // Configurar pines para deep sleep
-    configurePinsForDeepSleep();
+    // // Configurar pines para deep sleep
+    // configurePinsForDeepSleep();
+
     
+    // Entrar en deep sleep
     esp_deep_sleep_start();
 }
 
@@ -44,8 +46,7 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
  * @brief Configura los pines no utilizados en alta impedancia para reducir el consumo durante deep sleep.
  */
 void SleepManager::configurePinsForDeepSleep() {
-    // Configurar pines específicos del módulo LoRa como ANALOG
-    // pinMode(FLOW_SENSOR_PIN, ANALOG);
+    // // Configurar pines específicos del módulo LoRa como ANALOG
     // pinMode(ONE_WIRE_BUS, ANALOG);
 
     // pinMode(LORA_RST_PIN, ANALOG);
@@ -55,18 +56,22 @@ void SleepManager::configurePinsForDeepSleep() {
     // pinMode(SPI_LORA_MISO_PIN, ANALOG);
     // pinMode(SPI_LORA_MOSI_PIN, ANALOG);
 
+    // // Serial
     // pinMode(20, ANALOG); //Serial RX
     // pinMode(21, ANALOG); //Serial TX
 
+    // // I2C
     // pinMode(I2C_SDA_PIN, ANALOG); //I2C SDA
     // pinMode(I2C_SCL_PIN, ANALOG); //I2C SCL
-
-    // pinMode(9, ANALOG); //LORA NSS
 
     // // Configurar explícitamente LORA_NSS_PIN como salida en alto para mantener el chip select del módulo LoRa desactivado
     // pinMode(LORA_NSS_PIN, OUTPUT);
     // digitalWrite(LORA_NSS_PIN, HIGH);
-    gpio_hold_en((gpio_num_t)LORA_NSS_PIN);
+    // digitalWrite(CONFIG_PIN, HIGH);
+    digitalWrite(POWER_3V3_PIN, LOW);
+    // gpio_hold_en((gpio_num_t)LORA_NSS_PIN);
+    // gpio_hold_en((gpio_num_t)CONFIG_PIN);
+    gpio_hold_en((gpio_num_t)POWER_3V3_PIN);
 }
 
 /**
@@ -75,7 +80,8 @@ void SleepManager::configurePinsForDeepSleep() {
  */
 void SleepManager::releaseHeldPins() {
     // Liberar específicamente el pin NSS de LoRa
-    gpio_hold_dis((gpio_num_t)LORA_NSS_PIN);
-    
+    // gpio_hold_dis((gpio_num_t)LORA_NSS_PIN);
+    // gpio_hold_dis((gpio_num_t)CONFIG_PIN);
+    gpio_hold_dis((gpio_num_t)POWER_3V3_PIN);
     // Liberar otros pines si se ha aplicado retención
 }

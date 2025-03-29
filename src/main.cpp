@@ -71,10 +71,16 @@ Preferences store;
 // setup()
 //--------------------------------------------------------------------------------------------
 void setup() {
-    // setupStartTime = millis(); // Inicia el contador de tiempo
+    
+    // Inicializar contador de tiempo y log
+    setupStartTime = millis();
     DEBUG_BEGIN(SERIAL_BAUD_RATE);
+    
+    // Incrementar contador de boot y mostrar estadísticas
+    bootCount++;
+    DEBUG_PRINTF("Boot count: %d - Boot count desde último join exitoso: %d\n", bootCount, bootCountSinceUnsuccessfulJoin);
 
-    SleepManager::releaseHeldPins();
+    // Liberar pines que se mantuvieron en estado específico durante el deep sleep
 
     // // Inicialización del NVS y de hardware I2C/IO
     // preferences.clear();
@@ -97,16 +103,14 @@ void setup() {
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
 
-    // Configuración de pines de modo config
-    pinMode(CONFIG_PIN, INPUT);
-    pinMode(CONFIG_LED_PIN, OUTPUT);
+    //SleepManager::releaseHeldPins();
 
-    // Modo configuración BLE
+
+    // Verificar y entrar en modo configuración BLE si es necesario
     if (BLEHandler::checkConfigMode()) {
         return;
     }
 
-    // Ya no es necesario inicializar el RTC externo, el interno ya está disponible
     // Comprobar si tenemos un timestamp válido
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo)) {
@@ -118,7 +122,7 @@ void setup() {
     // Inicializar sensores
     SensorManager::beginSensors(enabledNormalSensors);
 
-    //TIEMPO TRASCURRIDO HASTA EL MOMENTO ≈ 98 ms
+    // TIEMPO TRASCURRIDO HASTA EL MOMENTO ≈ 98 ms
     // Inicializar radio LoRa
     int16_t state = radio.begin();
     if (state != RADIOLIB_ERR_NONE) {
