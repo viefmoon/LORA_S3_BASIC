@@ -81,6 +81,7 @@ void setup() {
     DEBUG_PRINTF("Boot count: %d - Boot count desde último join exitoso: %d\n", bootCount, bootCountSinceUnsuccessfulJoin);
 
     // Liberar pines que se mantuvieron en estado específico durante el deep sleep
+    SleepManager::releaseHeldPins();
 
     // // Inicialización del NVS y de hardware I2C/IO
     // preferences.clear();
@@ -99,12 +100,8 @@ void setup() {
 
     // Inicialización de hardware
     if (!HardwareManager::initHardware(powerManager, sht30Sensor, spiLora, enabledNormalSensors)) {
-        DEBUG_PRINTLN("Error en la inicialización del hardware");
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
-
-    //SleepManager::releaseHeldPins();
-
 
     // Verificar y entrar en modo configuración BLE si es necesario
     if (BLEHandler::checkConfigMode()) {
@@ -114,7 +111,6 @@ void setup() {
     // Comprobar si tenemos un timestamp válido
     struct tm timeinfo;
     if (!getLocalTime(&timeinfo)) {
-        DEBUG_PRINTLN("RTC no está configurado. Estableciendo una hora predeterminada.");
         // Establecer una fecha/hora predeterminada si el RTC no está configurado
         rtc.setTime(0, 0, 0, 1, 1, 2023);  // 01/01/2023 00:00:00
     }
@@ -126,7 +122,6 @@ void setup() {
     // Inicializar radio LoRa
     int16_t state = radio.begin();
     if (state != RADIOLIB_ERR_NONE) {
-        DEBUG_PRINTF("Error iniciando radio: %d\n", state);
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
 
@@ -134,7 +129,6 @@ void setup() {
     state = LoRaManager::lwActivate(node);
     if (state != RADIOLIB_LORAWAN_NEW_SESSION && 
         state != RADIOLIB_LORAWAN_SESSION_RESTORED) {
-        DEBUG_PRINTF("Error activando LoRaWAN o sincronizando RTC: %d\n", state);
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
 }
@@ -154,7 +148,8 @@ void loop() {
     std::vector<ModbusSensorReading> modbusReadings;
     SensorManager::getAllSensorReadings(normalReadings, modbusReadings, enabledNormalSensors, enabledModbusSensors);
 
-    // Usar el nuevo formato delimitado en lugar de JSON
+    //Apgar las fuentes de alimentacion de sensores antes de enviar datos
+    powerManager.allPowerOff();
     LoRaManager::sendDelimitedPayload(normalReadings, modbusReadings, node, deviceId, stationId, rtc);
 
     // Calcular y mostrar el tiempo transcurrido antes de dormir

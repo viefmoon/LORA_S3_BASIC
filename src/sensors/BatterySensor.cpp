@@ -16,8 +16,6 @@ float BatterySensor::readVoltage() {
     
     // Leer el valor del pin analógico para la batería en milivoltios directamente
     int milliVolts = analogReadMilliVolts(BATTERY_SENSOR_PIN);
-    DEBUG_PRINT("milliVolts: ");
-    DEBUG_PRINTLN(milliVolts);
 
     // Desactivar el pin de control para ahorrar energía
     digitalWrite(BATTERY_CONTROL_PIN, HIGH);

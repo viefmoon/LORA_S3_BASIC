@@ -29,8 +29,19 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Encender alimentación 3.3V
     powerManager.power3V3On();
     
-    // Inicializar RTD con 4 cables
-    rtdSensor.begin(MAX31865_4WIRE);
+    // Verificar si hay algún sensor RTD
+    bool rtdSensorEnabled = false;
+    for (const auto& sensor : enabledNormalSensors) {
+        if (sensor.type == RTD && sensor.enable) {
+            rtdSensorEnabled = true;
+            break;
+        }
+    }
+    
+    // Inicializar RTD solo si está habilitado en la configuración
+    if (rtdSensorEnabled) {
+        rtdSensor.begin(MAX31865_4WIRE);
+    }
 
     // Verificar si hay algún sensor DS18B20
     bool ds18b20SensorEnabled = false;
@@ -246,7 +257,6 @@ void SensorManager::getAllSensorReadings(std::vector<SensorReading>& normalReadi
         
         // Encender alimentación de 12V para sensores Modbus
         powerManager.power12VOn();
-        DEBUG_PRINTF("Esperando %u ms para estabilización de sensores Modbus\n", maxStabilizationTime);
         delay(maxStabilizationTime);
         
         // Inicializar comunicación Modbus antes de comenzar las mediciones

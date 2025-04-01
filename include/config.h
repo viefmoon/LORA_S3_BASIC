@@ -6,10 +6,19 @@
 // Configuración de depuración - Comentar para deshabilitar mensajes de depuración
 #define DEBUG_ENABLED
 
-// Pines generales
+// Pines one wire
 #define ONE_WIRE_BUS        38
+
+// Pines I2C
 #define I2C_SDA_PIN         48
 #define I2C_SCL_PIN         47
+
+//Serial 1
+#define SERIAL1_RX_PIN      43
+#define SERIAL1_TX_PIN      44
+
+// Pines para activar medición de batería
+#define BATTERY_CONTROL_PIN 37
 
 // Pines analógicos para sensores
 #define NTC100K_0_PIN       3  // IO3
@@ -19,7 +28,6 @@
 #define COND_SENSOR_PIN     20  // IO20 
 #define HDS10_SENSOR_PIN    7  // IO7 
 #define BATTERY_SENSOR_PIN  1  // IO1 
-#define BATTERY_CONTROL_PIN 37 // Pin para activar medición de batería
 #define SOILH_SENSOR_PIN    2  // IO2 // Pin para el sensor de humedad del suelo
 
 // SPI PARA LORA
@@ -30,6 +38,7 @@
 #define LORA_BUSY_PIN           13
 #define LORA_RST_PIN            12
 #define LORA_DIO1_PIN           14
+
 #define MAX_LORA_PAYLOAD        200
 
 // SPI PARA RTD
@@ -51,6 +60,10 @@
 #define CONFIG_LED_PIN      35
 #define CONFIG_BLE_WAIT_TIMEOUT     60000   // Tiempo máximo de espera para conexión BLE (60 segundos)
 #define CONFIG_BLE_MAX_CONN_TIME    300000  // Tiempo máximo de conexión BLE activa (5 minutos)
+
+//Leds
+#define LED1_PIN      33
+#define LED2_PIN      34
 
 // Serial
 #define SERIAL_BAUD_RATE         115200
