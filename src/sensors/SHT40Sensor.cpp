@@ -1,23 +1,23 @@
-#include "sensors/SHT4xSensor.h"
+#include "sensors/SHT40Sensor.h"
 
 /**
- * @brief Inicializa el sensor SHT4x
+ * @brief Inicializa el sensor SHT40
  * 
  * @return true si se inicializó correctamente, false en caso contrario
  */
-bool SHT4xSensor::begin() {
-    // Inicializar el objeto SHT4x con el bus I2C y la dirección
-    sht4xSensor.begin(Wire, SHT40_I2C_ADDR_44);
+bool SHT40Sensor::begin() {
+    // Inicializar el objeto SHT40 con el bus I2C y la dirección
+    sht40Sensor.begin(Wire, SHT40_I2C_ADDR_44);
     
     // Hacer un reset para asegurar que el sensor está en un estado limpio
-    int16_t error = sht4xSensor.softReset();
+    int16_t error = sht40Sensor.softReset();
     if (error != 0) {
         return false;
     }
     
     // Realizar una lectura de prueba
     float temp, hum;
-    error = sht4xSensor.measureHighPrecision(temp, hum);
+    error = sht40Sensor.measureHighPrecision(temp, hum);
     if (error != 0) {
         return false;
     }
@@ -26,16 +26,16 @@ bool SHT4xSensor::begin() {
 }
 
 /**
- * @brief Lee temperatura y humedad del sensor SHT4x
+ * @brief Lee temperatura y humedad del sensor SHT40
  * 
  * @param outTemp Variable donde se almacenará la temperatura en °C
  * @param outHum Variable donde se almacenará la humedad relativa en %
  * @return true si la lectura fue exitosa, false en caso contrario
  */
-bool SHT4xSensor::read(float &outTemp, float &outHum) {
+bool SHT40Sensor::read(float &outTemp, float &outHum) {
     // Intentar hasta 3 veces obtener una lectura válida
     for (int i = 0; i < 3; i++) {
-        int16_t error = sht4xSensor.measureHighPrecision(outTemp, outHum);
+        int16_t error = sht40Sensor.measureHighPrecision(outTemp, outHum);
         
         if (error == 0) {
             // Verificar que los valores sean válidos (no cero y dentro de rangos razonables)

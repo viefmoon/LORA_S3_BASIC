@@ -31,6 +31,12 @@ static void readNamespace(const char* ns, StaticJsonDocument<JSON_DOC_SIZE_MEDIU
 // Configuración por defecto de sensores NO-modbus
 const SensorConfig ConfigManager::defaultConfigs[] = DEFAULT_SENSOR_CONFIGS;
 
+// Configuración por defecto de sensores Modbus
+const ModbusSensorConfig ConfigManager::defaultModbusSensors[] = DEFAULT_MODBUS_SENSOR_CONFIGS;
+
+// Configuración por defecto de sensores ADC
+const SensorConfig ConfigManager::defaultAdcSensors[] = DEFAULT_ADC_SENSOR_CONFIGS;
+
 /* =========================================================================
    INICIALIZACIÓN Y CONFIGURACIÓN DEL SISTEMA
    ========================================================================= */
@@ -154,7 +160,6 @@ void ConfigManager::initializeDefaultConfig() {
         JsonArray sensorArray = doc.to<JsonArray>(); 
 
         // Cargamos un default (definido en config.h)
-        static const ModbusSensorConfig defaultModbusSensors[] = DEFAULT_MODBUS_SENSOR_CONFIGS;
         size_t count = sizeof(defaultModbusSensors)/sizeof(defaultModbusSensors[0]);
 
         for (size_t i = 0; i < count; i++) {
@@ -168,6 +173,32 @@ void ConfigManager::initializeDefaultConfig() {
         String jsonString;
         serializeJson(doc, jsonString);
         prefs.putString(NAMESPACE_SENSORS_MODBUS, jsonString.c_str());
+        prefs.end();
+    }
+
+    /* -------------------------------------------------------------------------
+       6. INICIALIZACIÓN DE SENSORES ADC
+       ------------------------------------------------------------------------- */
+    {
+        Preferences prefs;
+        prefs.begin(NAMESPACE_SENSORS_ADC, false);
+        StaticJsonDocument<JSON_DOC_SIZE_MEDIUM> doc;
+        JsonArray sensorArray = doc.to<JsonArray>(); 
+
+        // Cargamos sensores ADC por defecto
+        size_t count = sizeof(defaultAdcSensors)/sizeof(defaultAdcSensors[0]);
+
+        for (size_t i = 0; i < count; i++) {
+            JsonObject sensorObj = sensorArray.createNestedObject();
+            sensorObj[KEY_ADC_SENSOR]      = defaultAdcSensors[i].configKey;
+            sensorObj[KEY_ADC_SENSOR_ID]   = defaultAdcSensors[i].sensorId;
+            sensorObj[KEY_ADC_SENSOR_TYPE] = (int)defaultAdcSensors[i].type;
+            sensorObj[KEY_ADC_SENSOR_ENABLE] = defaultAdcSensors[i].enable;
+        }
+        
+        String jsonString;
+        serializeJson(doc, jsonString);
+        prefs.putString(NAMESPACE_SENSORS_ADC, jsonString.c_str());
         prefs.end();
     }
 }
@@ -288,9 +319,6 @@ void ConfigManager::setLoRaConfig(
 /* =========================================================================
    CONFIGURACIÓN DE SENSORES MODBUS
    ========================================================================= */
-// Definición de la variable estática
-const ModbusSensorConfig ConfigManager::defaultModbusSensors[] = DEFAULT_MODBUS_SENSOR_CONFIGS;
-
 void ConfigManager::setModbusSensorsConfigs(const std::vector<ModbusSensorConfig>& configs) {
     Preferences prefs;
     prefs.begin(NAMESPACE_SENSORS_MODBUS, false);
@@ -446,4 +474,63 @@ void ConfigManager::setPHConfig(float v1, float t1, float v2, float t2, float v3
     doc[KEY_PH_T3] = t3;
     doc[KEY_PH_CT] = defaultTemp;
     writeNamespace(NAMESPACE_PH, doc);
+}
+
+/* =========================================================================
+   CONFIGURACIÓN DE SENSORES ADC
+   ========================================================================= */
+void ConfigManager::setAdcSensorsConfigs(const std::vector<SensorConfig>& configs) {
+    Preferences prefs;
+    prefs.begin(NAMESPACE_SENSORS_ADC, false);
+    StaticJsonDocument<JSON_DOC_SIZE_MEDIUM> doc;
+    JsonArray sensorArray = doc.to<JsonArray>();
+    
+    for (const auto& sensor : configs) {
+        JsonObject sensorObj = sensorArray.createNestedObject();
+        sensorObj[KEY_ADC_SENSOR] = sensor.configKey;
+        sensorObj[KEY_ADC_SENSOR_ID] = sensor.sensorId;
+        sensorObj[KEY_ADC_SENSOR_TYPE] = static_cast<int>(sensor.type);
+        sensorObj[KEY_ADC_SENSOR_ENABLE] = sensor.enable;
+    }
+    
+    String jsonString;
+    serializeJson(doc, jsonString);
+    prefs.putString(NAMESPACE_SENSORS_ADC, jsonString.c_str());
+    prefs.end();
+}
+
+std::vector<SensorConfig> ConfigManager::getAllAdcSensorConfigs() {
+    StaticJsonDocument<JSON_DOC_SIZE_MEDIUM> doc;
+    readNamespace(NAMESPACE_SENSORS_ADC, doc);
+    
+    std::vector<SensorConfig> configs;
+    
+    if (doc.is<JsonArray>()) {
+        JsonArray array = doc.as<JsonArray>();
+        
+        for (JsonObject sensorObj : array) {
+            SensorConfig config;
+            const char* cKey = sensorObj[KEY_ADC_SENSOR] | "";
+            strncpy(config.configKey, cKey, sizeof(config.configKey));
+            const char* sensorId = sensorObj[KEY_ADC_SENSOR_ID] | "";
+            strncpy(config.sensorId, sensorId, sizeof(config.sensorId));
+            config.type = static_cast<SensorType>(sensorObj[KEY_ADC_SENSOR_TYPE] | 0);
+            config.enable = sensorObj[KEY_ADC_SENSOR_ENABLE] | false;
+            
+            configs.push_back(config);
+        }
+    }
+    
+    return configs;
+}
+
+std::vector<SensorConfig> ConfigManager::getEnabledAdcSensorConfigs() {
+    std::vector<SensorConfig> all = getAllAdcSensorConfigs();
+    std::vector<SensorConfig> enabled;
+    for (auto &s : all) {
+        if (s.enable) {
+            enabled.push_back(s);
+        }
+    }
+    return enabled;
 }

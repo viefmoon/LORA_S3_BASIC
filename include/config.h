@@ -106,6 +106,7 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 #define NAMESPACE_LORAWAN       "lorawan"
 #define NAMESPACE_LORA_SESSION  "lorasession"
 #define NAMESPACE_SENSORS_MODBUS "sensors_modbus"
+#define NAMESPACE_SENSORS_ADC    "sensors_adc"
 
 // Claves
 #define KEY_INITIALIZED         "initialized"
@@ -230,28 +231,22 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 #define KEY_PH_T3              "ph_t3"
 #define KEY_PH_CT              "ph_ct"
 
-
-// // Configuración default sensores
-// #define  DEFAULT_SENSOR_CONFIGS { \
-//     {"0", "NTC1",  N100K, true}, \
-//     {"1", "NTC2",  N100K, true}, \
-//     {"2", "NTC3",  N10K, true}, \
-//     {"3", "HDS10",  HDS10, true}, \
-//     {"4", "COND",  COND, true}, \
-//     {"5", "SM1",   SOILH, true}, \
-//     {"8", "PH",    PH, true}, \
-//     {"R", "RTD1",  RTD, true}, \
-//     {"D", "DS1",   DS18B20, true}, \
-//     {"I2C", "SHT30", SHT30, true} \
-// }
+// Claves para sensores ADC
+#define KEY_ADC_SENSOR      "k"
+#define KEY_ADC_SENSOR_ID   "id"
+#define KEY_ADC_SENSOR_TYPE "t"
+#define KEY_ADC_SENSOR_ENABLE "e"
 
 // Configuración default sensores
 #define DEFAULT_SENSOR_CONFIGS { \
-    {"B", "BME1", BME680, false}, \
+    {"B6", "BM6_1", BME680, false}, \
     {"C", "CO2_1", CO2, false}, \
-    {"B2", "BME280_1", BME280, false}, \
+    {"B2", "BM2_1", BME280, false}, \
     {"L", "LUX1", VEML7700, false}, \
-    {"SH4", "SHT4X_1", SHT4X, true} \
+    {"SH4", "SH4_1", SHT40, true}, \
+    {"R", "RTD_1",  RTD, false}, \
+    {"D", "DS_1",   DS18B20, false}, \
+    {"SH3", "SH3_1", SHT30, false} \
 }
 
 // Sin sensores Modbus registrados
@@ -259,6 +254,16 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
     {"ModbusEnv1", ENV4, 1, false} \
 }
 
+// Configuración default sensores ADC
+#define DEFAULT_ADC_SENSOR_CONFIGS { \
+    {"0", "NTC1",  N100K, true}, \
+    {"1", "NTC2",  N100K, true}, \
+    {"2", "NTC3",  N10K, false}, \
+    {"3", "HDS10", HDS10, false}, \
+    {"4", "COND",  COND, false}, \
+    {"5", "SM1",   SOILH, false}, \
+    {"8", "PH",    PH, false} \
+}
 
 // Límites de temperatura NTC para evitar lecturas erróneas cuando esta desconectado
 #define NTC_TEMP_MIN           -20.0   // Temperatura mínima válida en °C

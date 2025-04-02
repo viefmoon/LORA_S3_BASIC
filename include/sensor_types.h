@@ -51,7 +51,7 @@ enum SensorType {
     BME680 = 101, // Sensor BME680: [0]=Temp(°C), [1]=Hum(%), [2]=Press(hPa), [3]=Gas(KOhms)
     CO2 = 102,    // Sensor CO2 SCD4x: [0]=CO2(ppm), [1]=Temp(°C), [2]=Hum(%)
     BME280 = 103, // Sensor BME280: [0]=Temp(°C), [1]=Hum(%), [2]=Press(hPa)
-    SHT4X = 104,  // Sensor SHT4x: [0]=Temperatura(°C), [1]=Humedad(%)
+    SHT40 = 104,  // Sensor SHT40: [0]=Temperatura(°C), [1]=Humedad(%)
     
     // Sensores Modbus
     ENV4 = 110,   // Sensor ambiental 4 en 1: [0]=Humedad(%), [1]=Temperatura(°C), [2]=Presión(kPa), [3]=Iluminación(lux)

@@ -44,6 +44,13 @@ public:
     static std::vector<ModbusSensorConfig> getEnabledModbusSensorConfigs();
     
     /* =========================================================================
+       CONFIGURACIÓN DE SENSORES ADC
+       ========================================================================= */
+    static void setAdcSensorsConfigs(const std::vector<SensorConfig>& configs);
+    static std::vector<SensorConfig> getAllAdcSensorConfigs();
+    static std::vector<SensorConfig> getEnabledAdcSensorConfigs();
+    
+    /* =========================================================================
        CONFIGURACIÓN DE LORA
        ========================================================================= */
     static LoRaConfig getLoRaConfig();
@@ -78,5 +85,6 @@ private:
     // Configuraciones por defecto
     static const SensorConfig defaultConfigs[]; // Configs no-Modbus
     static const ModbusSensorConfig defaultModbusSensors[]; // Configs Modbus
+    static const SensorConfig defaultAdcSensors[]; // Configs ADC
 };
 

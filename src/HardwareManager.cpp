@@ -17,7 +17,7 @@ bool HardwareManager::initHardware(PowerManager& powerManager,
                                  Adafruit_BME680& bme680Sensor,
                                  Adafruit_BME280& bme280Sensor,
                                  Adafruit_VEML7700& veml7700Sensor,
-                                 SensirionI2cSht4x& sht4xSensor,
+                                 SensirionI2cSht4x& sht40Sensor,
                                  SPIClass& spiLora, 
                                  const std::vector<SensorConfig>& enabledNormalSensors) {
     // Configurar GPIO one wire con pull-up
@@ -35,7 +35,7 @@ bool HardwareManager::initHardware(PowerManager& powerManager,
     // Primero, determinar si algún sensor I2C está habilitado y marcar todos como no inicializados
     for (const auto& sensor : enabledNormalSensors) {
         if (sensor.enable) {
-            if (sensor.type == SHT30 || sensor.type == SHT4X || sensor.type == CO2 || 
+            if (sensor.type == SHT30 || sensor.type == SHT40 || sensor.type == CO2 || 
                 sensor.type == BME680 || sensor.type == BME280 || 
                 sensor.type == VEML7700) {
                 someI2cSensorEnabled = true;

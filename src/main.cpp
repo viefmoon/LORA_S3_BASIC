@@ -60,6 +60,7 @@ unsigned long setupStartTime; // Variable para almacenar el tiempo de inicio
 // Configuraciones de sensores
 std::vector<SensorConfig> enabledNormalSensors;
 std::vector<ModbusSensorConfig> enabledModbusSensors;
+std::vector<SensorConfig> enabledAdcSensors;
 
 ESP32Time rtc;
 PowerManager powerManager;
@@ -74,7 +75,7 @@ SCD4x scd4x(SCD4x_SENSOR_SCD41);
 Adafruit_BME680 bme680Sensor(&Wire);
 Adafruit_BME280 bme280Sensor;
 Adafruit_VEML7700 veml7700;
-SensirionI2cSht4x sht4xSensor;
+SensirionI2cSht4x sht40Sensor;
 
 SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN, spiLora, spiRadioSettings);
 LoRaWANNode node(&radio, &Region, subBand);
@@ -89,6 +90,7 @@ Preferences store;
 // setup()
 //--------------------------------------------------------------------------------------------
 void setup() {
+    setCpuFrequencyMhz(40); // 40MHz O 80MHz FUNCIONAN BIEN EN BAJO CONSUMO
     // Inicializar contador de tiempo y log
     setupStartTime = millis();
     DEBUG_BEGIN(SERIAL_BAUD_RATE);
@@ -111,10 +113,10 @@ void setup() {
     // Liberar pines que se mantuvieron en estado específico durante el deep sleep
     SleepManager::releaseHeldPins();
 
-    // // Inicialización del NVS y de hardware I2C/IO
-    // preferences.clear();       // Comentado para evitar borrar los nonces guardados
-    // nvs_flash_erase();         // Comentado para evitar borrar los nonces guardados
-    // nvs_flash_init();          // Comentado para preservar datos NVS entre boots
+    // Inicialización del NVS y de hardware I2C/IO
+    preferences.clear();       // Comentado para evitar borrar los nonces guardados
+    nvs_flash_erase();         // Comentado para evitar borrar los nonces guardados
+    nvs_flash_init();          // Comentado para preservar datos NVS entre boots
 
     // Inicialización de configuración
     if (!ConfigManager::checkInitialized()) {
@@ -125,6 +127,7 @@ void setup() {
     // Obtener configuraciones de sensores habilitados
     enabledNormalSensors = ConfigManager::getEnabledSensorConfigs();
     enabledModbusSensors = ConfigManager::getEnabledModbusSensorConfigs();
+    enabledAdcSensors = ConfigManager::getEnabledAdcSensorConfigs();
 
     // Inicialización de hardware básico (GPIO, I2C, SPI, etc.)
     if (!HardwareManager::initHardware(powerManager, 
@@ -132,7 +135,7 @@ void setup() {
                                      bme680Sensor, 
                                      bme280Sensor, 
                                      veml7700,
-                                     sht4xSensor,
+                                     sht40Sensor,
                                      spiLora, 
                                      enabledNormalSensors)) {
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
@@ -186,12 +189,14 @@ void loop() {
     // Obtener todas las lecturas de sensores (normales y Modbus)
     std::vector<SensorReading> normalReadings;
     std::vector<ModbusSensorReading> modbusReadings;
+    std::vector<SensorReading> adcReadings;
 
-    SensorManager::getAllSensorReadings(normalReadings, modbusReadings, enabledNormalSensors, enabledModbusSensors);
+    SensorManager::getAllSensorReadings(normalReadings, modbusReadings, adcReadings, 
+                                      enabledNormalSensors, enabledModbusSensors, enabledAdcSensors);
 
     //Apgar las fuentes de alimentacion de sensores antes de enviar datos
     powerManager.allPowerOff();
-    LoRaManager::sendDelimitedPayload(normalReadings, modbusReadings, node, deviceId, stationId, rtc);
+    LoRaManager::sendDelimitedPayload(normalReadings, modbusReadings, adcReadings, node, deviceId, stationId, rtc);
 
     // Calcular y mostrar el tiempo transcurrido antes de dormir
     unsigned long elapsedTime = millis() - setupStartTime;

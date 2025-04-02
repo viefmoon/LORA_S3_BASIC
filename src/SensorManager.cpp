@@ -24,7 +24,7 @@
 #include "sensors/DS18B20Sensor.h"
 #include "sensors/CO2Sensor.h" // Añadir inclusión para sensor CO2
 #include "sensors/VEML7700Sensor.h" // Añadir inclusión para sensor VEML7700
-#include "sensors/SHT4xSensor.h" // Añadir inclusión para sensor SHT4x
+#include "sensors/SHT40Sensor.h" // Añadir inclusión para sensor SHT40
 #include <Adafruit_BME680.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_VEML7700.h>
@@ -56,8 +56,8 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
                 success = sht30Sensor.begin();
                 if (success) sht30Sensor.reset();
                 break;
-            case SHT4X:
-                success = SHT4xSensor::begin();
+            case SHT40:
+                success = SHT40Sensor::begin();
                 break;
             case CO2:
                 success = CO2Sensor::begin();
@@ -283,10 +283,10 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
         }
         break;
 
-        case SHT4X:
+        case SHT40:
         {
             float tmp = 0.0f, hum = 0.0f;
-            bool success = SHT4xSensor::read(tmp, hum);
+            bool success = SHT40Sensor::read(tmp, hum);
             reading.subValues.clear();
             
             if (success) {
@@ -470,15 +470,23 @@ ModbusSensorReading SensorManager::getModbusSensorReading(const ModbusSensorConf
 
 void SensorManager::getAllSensorReadings(std::vector<SensorReading>& normalReadings,
                                         std::vector<ModbusSensorReading>& modbusReadings,
+                                        std::vector<SensorReading>& adcReadings,
                                         const std::vector<SensorConfig>& enabledNormalSensors,
-                                        const std::vector<ModbusSensorConfig>& enabledModbusSensors) {
+                                        const std::vector<ModbusSensorConfig>& enabledModbusSensors,
+                                        const std::vector<SensorConfig>& enabledAdcSensors) {
     // Reservar espacio para los vectores
     normalReadings.reserve(enabledNormalSensors.size());
     modbusReadings.reserve(enabledModbusSensors.size());
+    adcReadings.reserve(enabledAdcSensors.size());
     
     // Leer sensores normales
     for (const auto &sensor : enabledNormalSensors) {
         normalReadings.push_back(getSensorReading(sensor));
+    }
+    
+    // Leer sensores ADC
+    for (const auto &sensor : enabledAdcSensors) {
+        adcReadings.push_back(getSensorReading(sensor));
     }
     
     // Si hay sensores Modbus, inicializar comunicación, leerlos y finalizar

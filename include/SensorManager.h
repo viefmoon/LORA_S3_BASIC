@@ -39,7 +39,7 @@ class SensorManager {
      * @brief Inicializa todos los sensores habilitados en el sistema.
      * 
      * Este método se encarga de:
-     * 1. Inicializar sensores I2C (SHT30, SHT4X, CO2, BME680, BME280, VEML7700)
+     * 1. Inicializar sensores I2C (SHT30, SHT40, CO2, BME680, BME280, VEML7700)
      * 2. Inicializar sensores RTD si están habilitados
      * 3. Inicializar sensores DS18B20 si están habilitados
      * 4. Configurar pines analógicos para sensores específicos (NTC, pH, conductividad, etc.)
@@ -58,8 +58,10 @@ class SensorManager {
     // Obtiene todas las lecturas de sensores (normales y Modbus) habilitados
     static void getAllSensorReadings(std::vector<SensorReading>& normalReadings,
                                     std::vector<ModbusSensorReading>& modbusReadings,
+                                    std::vector<SensorReading>& adcReadings,
                                     const std::vector<SensorConfig>& enabledNormalSensors,
-                                    const std::vector<ModbusSensorConfig>& enabledModbusSensors);
+                                    const std::vector<ModbusSensorConfig>& enabledModbusSensors,
+                                    const std::vector<SensorConfig>& enabledAdcSensors);
 
   private:
     // Métodos de lectura internos

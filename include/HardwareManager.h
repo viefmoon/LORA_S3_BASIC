@@ -26,7 +26,7 @@ extern SHT31 sht30Sensor;
 extern Adafruit_BME680 bme680Sensor;
 extern Adafruit_BME280 bme280Sensor;
 extern Adafruit_VEML7700 veml7700Sensor;
-extern SensirionI2cSht4x sht4xSensor;
+extern SensirionI2cSht4x sht40Sensor;
 extern std::map<std::string, bool> sensorInitStatus;
 
 class HardwareManager {
@@ -42,7 +42,7 @@ public:
      * @param bme680Sensor Referencia al sensor BME680 (no se inicializa aquí)
      * @param bme280Sensor Referencia al sensor BME280 (no se inicializa aquí)
      * @param veml7700Sensor Referencia al sensor VEML7700 (no se inicializa aquí)
-     * @param sht4xSensor Referencia al sensor SHT4x (no se inicializa aquí)
+     * @param sht40Sensor Referencia al sensor SHT40 (no se inicializa aquí)
      * @param spiLora Referencia a la interfaz SPI para LoRa
      * @param enabledNormalSensors Vector con las configuraciones de sensores habilitados
      * @return true si la inicialización fue exitosa, false en caso contrario
@@ -52,7 +52,7 @@ public:
                            Adafruit_BME680& bme680Sensor,
                            Adafruit_BME280& bme280Sensor,
                            Adafruit_VEML7700& veml7700Sensor,
-                           SensirionI2cSht4x& sht4xSensor,
+                           SensirionI2cSht4x& sht40Sensor,
                            SPIClass& spiLora,
                            const std::vector<SensorConfig>& enabledNormalSensors);
 

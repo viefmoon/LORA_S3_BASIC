@@ -420,9 +420,10 @@ void LoRaManager::sendDelimitedPayload(
 
 #if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 /**
- * @brief Envía el payload de sensores estándar y Modbus usando formato delimitado.
+ * @brief Envía el payload de sensores estándar, Modbus y ADC usando formato delimitado.
  * @param normalReadings Vector con lecturas de sensores estándar
  * @param modbusReadings Vector con lecturas de sensores Modbus
+ * @param adcReadings Vector con lecturas de sensores ADC
  * @param node Referencia al nodo LoRaWAN
  * @param deviceId ID del dispositivo
  * @param stationId ID de la estación
@@ -431,6 +432,7 @@ void LoRaManager::sendDelimitedPayload(
 void LoRaManager::sendDelimitedPayload(
     const std::vector<SensorReading>& normalReadings, 
     const std::vector<ModbusSensorReading>& modbusReadings,
+    const std::vector<SensorReading>& adcReadings,
     LoRaWANNode& node,
     const String& deviceId, 
     const String& stationId, 
@@ -444,9 +446,19 @@ void LoRaManager::sendDelimitedPayload(
     // Obtener timestamp
     uint32_t timestamp = rtc.getEpoch();
 
-    // Crear payload
+    // Crear payload combinado de sensores normales y ADC
+    std::vector<SensorReading> combinedReadings;
+    combinedReadings.reserve(normalReadings.size() + adcReadings.size());
+    
+    // Añadir sensores normales
+    combinedReadings.insert(combinedReadings.end(), normalReadings.begin(), normalReadings.end());
+    
+    // Añadir sensores ADC
+    combinedReadings.insert(combinedReadings.end(), adcReadings.begin(), adcReadings.end());
+
+    // Crear payload con sensores combinados y Modbus
     size_t payloadSize = createDelimitedPayload(
-        normalReadings, 
+        combinedReadings, 
         modbusReadings, 
         deviceId, 
         stationId, 
@@ -463,7 +475,6 @@ void LoRaManager::sendDelimitedPayload(
     uint8_t fPort = 1;
     uint8_t downlinkPayload[255];
     size_t downlinkSize = 0;
-
     /*
     Lista de Data Rates (DR) para LoRaWAN US915
 
