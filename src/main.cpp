@@ -7,6 +7,8 @@
 #include <vector>
 #include <ArduinoJson.h>
 #include <cmath>
+#include <map>
+#include <string>
 
 #include "config.h"
 #include "debug.h"
@@ -23,17 +25,30 @@
 #include "config_manager.h"
 #include "utilities.h"
 #include <SensirionI2cSht3x.h>
+#include "SparkFun_SCD4x_Arduino_Library.h"
 #include "LoRaManager.h"
 #include "BLE.h"
 #include "HardwareManager.h"
 #include "SleepManager.h"
 #include "SHT31.h"
 #include <Adafruit_MAX31865.h>
+#include <Adafruit_BME680.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_VEML7700.h>
+#include <SensirionI2cSht4x.h>
+
+// --- INICIO: Añadir bandera global ---
+bool wokeFromConfigPin = false;
+// --- FIN: Añadir bandera global ---
+
 //--------------------------------------------------------------------------------------------
 // Variables globales
 //--------------------------------------------------------------------------------------------
 const LoRaWANBand_t Region = LORA_REGION;
 const uint8_t subBand = LORA_SUBBAND;
+
+// Mapa para rastrear el estado de inicialización de los sensores
+std::map<std::string, bool> sensorInitStatus;
 
 Preferences preferences;
 uint32_t timeToSleep;
@@ -55,6 +70,11 @@ SPISettings spiRadioSettings(SPI_LORA_CLOCK, MSBFIRST, SPI_MODE0);
 Adafruit_MAX31865 rtdSensor = Adafruit_MAX31865(PT100_CS_PIN, SPI_MOSI_PIN, SPI_MISO_PIN, SPI_SCK_PIN);
 
 SHT31 sht30Sensor(0x44, &Wire);
+SCD4x scd4x(SCD4x_SENSOR_SCD41);
+Adafruit_BME680 bme680Sensor(&Wire);
+Adafruit_BME280 bme280Sensor;
+Adafruit_VEML7700 veml7700;
+SensirionI2cSht4x sht4xSensor;
 
 SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN, spiLora, spiRadioSettings);
 LoRaWANNode node(&radio, &Region, subBand);
@@ -62,8 +82,6 @@ LoRaWANNode node(&radio, &Region, subBand);
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature dallasTemp(&oneWire);
 
-RTC_DATA_ATTR uint16_t bootCount = 0;
-RTC_DATA_ATTR uint16_t bootCountSinceUnsuccessfulJoin = 0;
 RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 Preferences store;
 
@@ -71,22 +89,32 @@ Preferences store;
 // setup()
 //--------------------------------------------------------------------------------------------
 void setup() {
-    
     // Inicializar contador de tiempo y log
     setupStartTime = millis();
     DEBUG_BEGIN(SERIAL_BAUD_RATE);
-    
-    // Incrementar contador de boot y mostrar estadísticas
-    bootCount++;
-    DEBUG_PRINTF("Boot count: %d - Boot count desde último join exitoso: %d\n", bootCount, bootCountSinceUnsuccessfulJoin);
+    // --- INICIO: Comprobar causa del despertar ---
+    esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+    if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
+        DEBUG_PRINTLN("INFO: Despertado por EXT0 (CONFIG_PIN)");
+        wokeFromConfigPin = true;
+        // Opcional: Pequeño delay para estabilizar/debounce inicial
+        delay(50);
+    } else if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+        DEBUG_PRINTLN("INFO: Despertado por Timer");
+        wokeFromConfigPin = false;
+    } else {
+        DEBUG_PRINTF("INFO: Despertado por otra razón: %d\n", wakeup_reason);
+        wokeFromConfigPin = false;
+    }
+    // --- FIN: Comprobar causa del despertar ---
 
     // Liberar pines que se mantuvieron en estado específico durante el deep sleep
     SleepManager::releaseHeldPins();
 
     // // Inicialización del NVS y de hardware I2C/IO
-    // preferences.clear();
-    // nvs_flash_erase();
-    // nvs_flash_init();
+    // preferences.clear();       // Comentado para evitar borrar los nonces guardados
+    // nvs_flash_erase();         // Comentado para evitar borrar los nonces guardados
+    // nvs_flash_init();          // Comentado para preservar datos NVS entre boots
 
     // Inicialización de configuración
     if (!ConfigManager::checkInitialized()) {
@@ -99,7 +127,14 @@ void setup() {
     enabledModbusSensors = ConfigManager::getEnabledModbusSensorConfigs();
 
     // Inicialización de hardware
-    if (!HardwareManager::initHardware(powerManager, sht30Sensor, spiLora, enabledNormalSensors)) {
+    if (!HardwareManager::initHardware(powerManager, 
+                                     sht30Sensor, 
+                                     bme680Sensor, 
+                                     bme280Sensor, 
+                                     veml7700,
+                                     sht4xSensor,
+                                     spiLora, 
+                                     enabledNormalSensors)) {
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
     }
 

@@ -4,12 +4,18 @@
  *******************************************************************************************/
 
 #include "BLE.h"
+#include "config.h" // Asegúrate de incluir config.h para CONFIG_PIN y CONFIG_TRIGGER_TIME
+#include "debug.h"  // Para los mensajes DEBUG_*
 
 // Inicialización de variables estáticas
 bool BLEHandler::isConnected = false;
 unsigned long BLEHandler::connectionStartTime = 0;
 BLEServer* BLEHandler::pBLEServer = nullptr;
 bool BLEHandler::shouldExitOnDisconnect = false;
+
+// --- INICIO: Declarar variable global externa ---
+extern bool wokeFromConfigPin;
+// --- FIN: Declarar variable global externa ---
 
 // Implementación de los métodos de la clase ServerCallbacks
 void BLEHandler::ServerCallbacks::onConnect(BLEServer* pServer) {
@@ -26,41 +32,68 @@ void BLEHandler::ServerCallbacks::onDisconnect(BLEServer* pServer) {
 
 // Implementación de los métodos de BLEHandler
 bool BLEHandler::checkConfigMode() {
-    if (digitalRead(CONFIG_PIN) == LOW) {
+    bool enterConfig = false;
+    int initialPinState = digitalRead(CONFIG_PIN);
+
+    // Entrar en modo config si:
+    // 1. Despertamos por el pin Y el pin SIGUE bajo ahora
+    // 2. O si el pin está bajo AHORA (independientemente de cómo despertamos)
+    if (initialPinState == LOW) {
         unsigned long startTime = millis();
-        while (digitalRead(CONFIG_PIN) == LOW) {
-            if (millis() - startTime >= CONFIG_TRIGGER_TIME) {
-                // Reiniciar variables de estado
-                isConnected = false;
-                shouldExitOnDisconnect = false;
-                
-                // Obtener configuración LoRa para el nombre BLE
-                LoRaConfig loraConfig = ConfigManager::getLoRaConfig();
-                String bleName = BLE_DEVICE_PREFIX + String(loraConfig.devEUI);
-                
-                // Inicializar BLE
-                BLEDevice::init(bleName.c_str());
-                pBLEServer = BLEDevice::createServer();
-                pBLEServer->setCallbacks(new ServerCallbacks());
-                
-                // Configurar servicio BLE
-                BLEService* pService = setupService(pBLEServer);
-                
-                // Configurar publicidad BLE
-                BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
-                pAdvertising->addServiceUUID(pService->getUUID());
-                pAdvertising->setScanResponse(true);
-                pAdvertising->setMinPreferred(0x06);
-                pAdvertising->setMinPreferred(0x12);
-                pAdvertising->start();
-                
-                // Entrar en bucle de configuración
-                runConfigLoop();
-                return true;
+
+        // Pequeño delay para debounce básico - crucial para pulsadores mecánicos
+        delay(50);
+
+        // Verificar si sigue presionado después del debounce
+        if (digitalRead(CONFIG_PIN) == LOW) {
+            while (digitalRead(CONFIG_PIN) == LOW) {
+                if (millis() - startTime >= CONFIG_TRIGGER_TIME) {
+                    DEBUG_PRINTLN("INFO: Entrando en modo configuración BLE");
+                    enterConfig = true;
+                    break; // Salir del while
+                }
+                delay(10); // Pequeña pausa para no saturar
             }
         }
     }
-    return false;
+
+    // Si decidimos entrar en modo config
+    if (enterConfig) {
+        // Reiniciar variables de estado BLE
+        isConnected = false;
+        shouldExitOnDisconnect = false;
+
+        // Obtener configuración LoRa para el nombre BLE
+        LoRaConfig loraConfig = ConfigManager::getLoRaConfig();
+        String bleName = BLE_DEVICE_PREFIX + String(loraConfig.devEUI);
+
+        // Inicializar BLE
+        BLEDevice::init(bleName.c_str());
+        pBLEServer = BLEDevice::createServer();
+        pBLEServer->setCallbacks(new ServerCallbacks());
+
+        // Configurar servicio BLE
+        BLEService* pService = setupService(pBLEServer);
+
+        // Configurar publicidad BLE
+        BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
+        pAdvertising->addServiceUUID(pService->getUUID());
+        pAdvertising->setScanResponse(true);
+        pAdvertising->setMinPreferred(0x06);
+        pAdvertising->setMinPreferred(0x12);
+        pAdvertising->start();
+
+        // Entrar en bucle de configuración
+        runConfigLoop();
+        DEBUG_PRINTLN("INFO: Saliendo del modo configuración BLE");
+        
+        wokeFromConfigPin = false; // Importante: Resetear el flag después de usarlo
+        return true; // Indicar que entramos (y salimos) del modo config
+    }
+
+    // Si no entramos en modo config, reseteamos el flag por si acaso estaba activo
+    wokeFromConfigPin = false;
+    return false; // No se entró en modo config
 }
 
 BLEServer* BLEHandler::initBLE(const String& devEUI) {

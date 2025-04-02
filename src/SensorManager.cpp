@@ -9,6 +9,8 @@
 #include "config_manager.h"
 #include "debug.h"
 #include "utilities.h"
+#include <map>
+#include <string>
 
 // Eliminadas las inclusiones de "ADS124S08.h" y "AdcUtilities.h"
 #include "sensors/NtcManager.h"
@@ -17,9 +19,21 @@
 #include "sensors/HDS10Sensor.h"
 // Se eliminó la variable externa ADC
 
-// Inclusión de nuevos sensores
+// Inclusión de sensores
 #include "sensors/SHT30Sensor.h"
 #include "sensors/DS18B20Sensor.h"
+#include "sensors/CO2Sensor.h" // Añadir inclusión para sensor CO2
+#include "sensors/VEML7700Sensor.h" // Añadir inclusión para sensor VEML7700
+#include "sensors/SHT4xSensor.h" // Añadir inclusión para sensor SHT4x
+#include <Adafruit_BME680.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_VEML7700.h>
+
+// Variables externas
+extern Adafruit_BME680 bme680Sensor;
+extern Adafruit_BME280 bme280Sensor;
+extern Adafruit_VEML7700 veml7700;
+extern std::map<std::string, bool> sensorInitStatus;
 
 // -------------------------------------------------------------------------------------
 // Métodos de la clase SensorManager
@@ -99,6 +113,36 @@ SensorReading SensorManager::getSensorReading(const SensorConfig &cfg) {
  * @brief Lógica principal para leer el valor de cada sensor normal (no Modbus) según su tipo.
  */
 float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &reading) {
+    // Verificar si el sensor está en el mapa y si su estado es 'true'
+    std::string currentSensorId = cfg.sensorId;
+    
+    if (sensorInitStatus.count(currentSensorId) == 0 || !sensorInitStatus[currentSensorId]) {
+        // Si el sensor no está en el mapa o su estado es 'false'
+
+        reading.value = NAN; // Asignar NAN al valor principal
+        reading.subValues.clear(); // Limpiar subvalores
+
+        // Para sensores multivalor, llenar subValues con NAN para mantener la estructura esperada
+        size_t numSubValues = 0;
+        switch(cfg.type) {
+            case SHT30: numSubValues = 2; break;
+            case CO2:
+            case BME680:
+            case BME280: numSubValues = 3; break;
+            // El resto de sensores son de valor único
+        }
+
+        if (numSubValues > 0) {
+            SubValue nanVal; nanVal.value = NAN;
+            for(size_t i = 0; i < numSubValues; ++i) {
+                reading.subValues.push_back(nanVal);
+            }
+        }
+
+        return NAN; // Retornar NAN inmediatamente
+    }
+
+    // Si la inicialización fue exitosa, proceder con la lectura normal
     switch (cfg.type) {
         case N100K:
             // Usar NtcManager para obtener la temperatura
@@ -185,6 +229,163 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
             
             // Asignar el valor principal como NAN si alguno de los valores falló
             reading.value = (isnan(tmp) || isnan(hum)) ? NAN : tmp;
+        }
+        break;
+
+        case SHT4X:
+        {
+            float tmp = 0.0f, hum = 0.0f;
+            bool success = SHT4xSensor::read(tmp, hum);
+            reading.subValues.clear();
+            
+            if (success) {
+                // Agregar temperatura como primer valor [0]
+                SubValue sT; 
+                sT.value = tmp;
+                reading.subValues.push_back(sT);
+                
+                // Agregar humedad como segundo valor [1]
+                SubValue sH; 
+                sH.value = hum;
+                reading.subValues.push_back(sH);
+                
+                // Asignar temperatura como valor principal
+                reading.value = tmp;
+            } else {
+                // En caso de error, rellenar con NAN
+                SubValue nanVal; nanVal.value = NAN;
+                reading.subValues.push_back(nanVal); // Temperatura
+                reading.subValues.push_back(nanVal); // Humedad
+                reading.value = NAN;
+            }
+        }
+        break;
+
+        // Caso para el sensor de CO2 (SCD4x)
+        case CO2:
+        {
+            float co2 = NAN, temp = NAN, hum = NAN; // Inicializar a NAN
+            if (CO2Sensor::read(co2, temp, hum)) {
+                // Lectura exitosa
+                reading.subValues.clear();
+
+                // Agregar CO2 como primer valor [0]
+                SubValue sCO2;
+                sCO2.value = co2;
+                reading.subValues.push_back(sCO2);
+
+                // Agregar Temperatura como segundo valor [1]
+                SubValue sTemp;
+                sTemp.value = temp;
+                reading.subValues.push_back(sTemp);
+
+                // Agregar Humedad como tercer valor [2]
+                SubValue sHum;
+                sHum.value = hum;
+                reading.subValues.push_back(sHum);
+
+                // Asignar CO2 como valor principal
+                reading.value = co2;
+            } else {
+                // Lectura fallida, asegurar que todo sea NAN
+                reading.subValues.clear();
+                SubValue nanVal; nanVal.value = NAN;
+                reading.subValues.push_back(nanVal); // CO2
+                reading.subValues.push_back(nanVal); // Temp
+                reading.subValues.push_back(nanVal); // Hum
+                reading.value = NAN;
+            }
+        }
+        break;
+        
+        case BME680:
+        {
+            // performReading() puede tardar un poco
+            if (!bme680Sensor.performReading()) {
+                reading.value = NAN;
+                reading.subValues.clear();
+                // Rellenar con NANs para mantener la estructura
+                SubValue nanVal; nanVal.value = NAN;
+                reading.subValues.push_back(nanVal); // Temp
+                reading.subValues.push_back(nanVal); // Hum
+                reading.subValues.push_back(nanVal); // Press
+                reading.subValues.push_back(nanVal); // Gas
+            } else {
+                reading.subValues.clear();
+                float temp = bme680Sensor.temperature;
+                float hum = bme680Sensor.humidity;
+                float press = bme680Sensor.pressure / 100.0F; // Convertir Pa a hPa
+                float gas = bme680Sensor.gas_resistance / 1000.0F; // Convertir Ohms a KOhms
+
+                // Rellenar subValues en orden definido: [0]=Temp, [1]=Hum, [2]=Press, [3]=Gas
+                SubValue svT; svT.value = temp; reading.subValues.push_back(svT);
+                SubValue svH; svH.value = hum; reading.subValues.push_back(svH);
+                SubValue svP; svP.value = press; reading.subValues.push_back(svP);
+                SubValue svG; svG.value = gas; reading.subValues.push_back(svG);
+
+                // Asignar un valor principal (ej. temperatura)
+                reading.value = temp;
+            }
+        }
+        break;
+
+        case BME280:
+        {
+            // Forzar una medición (necesario en MODE_FORCED)
+            bme280Sensor.takeForcedMeasurement();
+
+            // Leer valores
+            float temp = bme280Sensor.readTemperature();    // Lee Temperatura en °C
+            float hum = bme280Sensor.readHumidity();       // Lee Humedad en %
+            float press = bme280Sensor.readPressure();     // Lee Presión en Pa
+
+            // Verificar si las lecturas son válidas (la librería suele devolver NAN en error)
+            if (isnan(temp) || isnan(hum) || isnan(press)) {
+                reading.value = NAN;
+                reading.subValues.clear();
+                // Rellenar con NANs para mantener la estructura
+                SubValue nanVal; nanVal.value = NAN;
+                reading.subValues.push_back(nanVal); // Temp
+                reading.subValues.push_back(nanVal); // Hum
+                reading.subValues.push_back(nanVal); // Press
+            } else {
+                // Convertir presión de Pa a hPa
+                press = press / 100.0F;
+
+                reading.subValues.clear();
+
+                // Rellenar subValues en orden definido: [0]=Temp(°C), [1]=Hum(%), [2]=Press(hPa)
+                SubValue svT; svT.value = temp; reading.subValues.push_back(svT);
+                SubValue svH; svH.value = hum; reading.subValues.push_back(svH);
+                SubValue svP; svP.value = press; reading.subValues.push_back(svP);
+
+                // Asignar un valor principal (ej. temperatura)
+                reading.value = temp;
+            }
+        }
+        break;
+
+        case VEML7700:
+        {
+            // Leer el valor de luz en lux
+            float lux = VEML7700Sensor::read();
+            
+            // Verificar si la lectura es válida
+            if (isnan(lux)) {
+                reading.value = NAN;
+                reading.subValues.clear();
+                // Rellenar con NANs para mantener la estructura
+                SubValue nanVal; nanVal.value = NAN;
+                reading.subValues.push_back(nanVal); // Lux
+            } else {
+                reading.subValues.clear();
+                
+                // Rellenar subValues: [0]=Lux
+                SubValue svL; svL.value = lux; reading.subValues.push_back(svL);
+                
+                // Asignar el valor de lux como valor principal
+                reading.value = lux;
+            }
         }
         break;
 

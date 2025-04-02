@@ -22,7 +22,6 @@ SX1262* LoRaManager::radioModule = nullptr;
 
 // Referencias externas
 extern RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
-extern RTC_DATA_ATTR uint16_t bootCountSinceUnsuccessfulJoin;
 extern ESP32Time rtc;
 
 int16_t LoRaManager::begin(SX1262* radio, const LoRaWANBand_t* region, uint8_t subBand) {
@@ -76,6 +75,7 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
                 
                 if (state == RADIOLIB_LORAWAN_SESSION_RESTORED) {
                     store.end();
+                    DEBUG_PRINTLN("Sesión LoRaWAN restaurada");
                     return state;
                 }
             }
@@ -173,17 +173,14 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
             // Si no se pudo actualizar el RTC después de los intentos máximos, retornar error
             if (!rtcUpdated) {
                 DEBUG_PRINTLN("No se pudo actualizar el RTC después de los intentos máximos, entrando en deep sleep");
-                bootCountSinceUnsuccessfulJoin = 0;
                 store.end();
                 return RADIOLIB_ERR_RTC_SYNC_FAILED; // Error personalizado para indicar fallo en sincronización RTC
             }
             
-            bootCountSinceUnsuccessfulJoin = 0;
             store.end();
             return RADIOLIB_LORAWAN_NEW_SESSION;
         } else {
             DEBUG_PRINTF("Join falló: %d\n", state);
-            bootCountSinceUnsuccessfulJoin++;
             store.end();
             return state;
         }

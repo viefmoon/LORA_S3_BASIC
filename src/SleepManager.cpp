@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "LoRaManager.h"
 #include "esp_sleep.h"
+#include "driver/rtc_io.h"
 
 void SleepManager::goToDeepSleep(uint32_t timeToSleep, 
                                PowerManager& powerManager,
@@ -25,17 +26,35 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
     Wire.end();
     spiLora.end();
     
-    // Configurar el temporizador y GPIO para despertar
-    esp_sleep_enable_timer_wakeup(timeToSleep * 1000000ULL);
-    // gpio_wakeup_enable((gpio_num_t)CONFIG_PIN, GPIO_INTR_LOW_LEVEL);
-    // esp_sleep_enable_gpio_wakeup();
-    // esp_sleep_enable_ext0_wakeup((gpio_num_t)CONFIG_PIN, 0); // 0 para nivel bajo
-    
-    // Configurar pines para deep sleep
+    // Configurar pines para deep sleep (excepto CONFIG_PIN)
     configurePinsForDeepSleep();
 
-    
-    // Entrar en deep sleep
+    // --- INICIO: Configuración específica del pin de despertar ---
+    gpio_num_t wakePin = (gpio_num_t)CONFIG_PIN;
+
+    // 1. Desinicializar por si acaso (buena práctica)
+    rtc_gpio_deinit(wakePin);
+
+    // 2. Inicializar como RTC GPIO
+    rtc_gpio_init(wakePin);
+
+    // 3. Establecer dirección como ENTRADA
+    rtc_gpio_set_direction(wakePin, RTC_GPIO_MODE_INPUT_ONLY);
+
+    // 4. Habilitar PULL-UP (Incluso con externa, no hace daño y es robusto)
+    rtc_gpio_pullup_en(wakePin);
+
+    // 5. Deshabilitar PULL-DOWN explícitamente
+    rtc_gpio_pulldown_dis(wakePin);
+
+    // 6. Asegurarse de que el "hold" esté deshabilitado para este pin
+    rtc_gpio_hold_dis(wakePin);
+    // --- FIN: Configuración específica del pin de despertar ---
+
+    // Configurar el temporizador y GPIO para despertar
+    esp_sleep_enable_timer_wakeup(timeToSleep * 1000000ULL);
+    esp_sleep_enable_ext0_wakeup(wakePin, 0); // 0 para nivel bajo
+
     esp_deep_sleep_start();
 }
 
