@@ -39,7 +39,8 @@ extern std::map<std::string, bool> sensorInitStatus;
 // Métodos de la clase SensorManager
 // -------------------------------------------------------------------------------------
 
-void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalSensors) {
+void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalSensors,
+                              const std::vector<SensorConfig>& enabledAdcSensors) {
     // Encender alimentación 3.3V
     powerManager.power3V3On();
     
@@ -143,6 +144,18 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Soil Humidity Sensor
     pinMode(SOILH_SENSOR_PIN, INPUT);
 
+    // Inicializar sensores ADC habilitados
+    for (const auto& sensor : enabledAdcSensors) {
+        if (!sensor.enable) continue; // Saltar sensores deshabilitados
+
+        // Obtener el identificador del sensor para mapear su estado
+        std::string currentSensorId = sensor.sensorId;
+        bool success = true; // Por defecto éxito para sensores ADC
+        
+        // Registrar en el mapa de estado
+        sensorInitStatus[currentSensorId] = success;
+    }
+
     // Configurar ADC interno
     analogReadResolution(13); // Resolución de 12 bits (0-4095)
     analogSetAttenuation(ADC_11db); // Atenuación para medir hasta 3.3V
@@ -235,6 +248,7 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
                     // Convertir el voltaje a porcentaje (0V = 0%, 3.3V = 100%)
                     reading.value = (voltage / 3.3f) * 100.0f;
                 }
+                DEBUG_PRINTF("SOILH ADC: %d, voltaje: %.3f, valor: %.3f%%\n", adcValue, voltage, reading.value);
             }
             break;
 

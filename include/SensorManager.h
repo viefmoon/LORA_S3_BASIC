@@ -45,9 +45,11 @@ class SensorManager {
      * 4. Configurar pines analógicos para sensores específicos (NTC, pH, conductividad, etc.)
      * 5. Configurar el ADC interno
      * 
-     * @param enabledNormalSensors Vector con las configuraciones de sensores habilitados
+     * @param enabledNormalSensors Vector con las configuraciones de sensores normales habilitados
+     * @param enabledAdcSensors Vector con las configuraciones de sensores ADC habilitados
      */
-    static void beginSensors(const std::vector<SensorConfig>& enabledNormalSensors);
+    static void beginSensors(const std::vector<SensorConfig>& enabledNormalSensors,
+                          const std::vector<SensorConfig>& enabledAdcSensors);
 
     // Devuelve la lectura (o lecturas) de un sensor NO-Modbus según su configuración.
     static SensorReading getSensorReading(const SensorConfig& cfg);

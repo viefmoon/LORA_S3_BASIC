@@ -113,10 +113,10 @@ void setup() {
     // Liberar pines que se mantuvieron en estado específico durante el deep sleep
     SleepManager::releaseHeldPins();
 
-    // Inicialización del NVS y de hardware I2C/IO
-    preferences.clear();       // Comentado para evitar borrar los nonces guardados
-    nvs_flash_erase();         // Comentado para evitar borrar los nonces guardados
-    nvs_flash_init();          // Comentado para preservar datos NVS entre boots
+    // // Inicialización del NVS y de hardware I2C/IO
+    // preferences.clear();       // Comentado para evitar borrar los nonces guardados
+    // nvs_flash_erase();         // Comentado para evitar borrar los nonces guardados
+    // nvs_flash_init();          // Comentado para preservar datos NVS entre boots
 
     // Inicialización de configuración
     if (!ConfigManager::checkInitialized()) {
@@ -155,7 +155,7 @@ void setup() {
 
     // Tiempo hasta que se inicializan los sensores = 4ms
     // Inicializar sensores
-    SensorManager::beginSensors(enabledNormalSensors);
+    SensorManager::beginSensors(enabledNormalSensors, enabledAdcSensors);
 
     DEBUG_PRINTLN("Tiempo después de iniciar sensores: " + String(millis() - setupStartTime));
 
