@@ -37,14 +37,8 @@ enum SensorType {
     DS18B20,  // DS18B20
     PH,       // pH
     COND,     // Conductividad
-    CONDH,    // Humedad de Condensación
     SOILH,    // Soil Humidity
-    TEMP_A,   // Temperatura ambiente
-    HUM_A,    // Humedad ambiente
-    PRESS_A,  // Presión atmosférica
     VEML7700, // Sensor de luz VEML7700 (Lux)
-    ROOTH,    // Humedad de Raíz
-    LEAFH,    // Humedad de Hoja
     
     // Sensores múltiples (valor 100 en el mapa)
     SHT30 = 100,  // Sensor SHT30: [0]=Temperatura(°C), [1]=Humedad(%)

@@ -100,6 +100,7 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     for (const auto& sensor : enabledNormalSensors) {
         if (sensor.type == RTD && sensor.enable) {
             rtdSensorEnabled = true;
+            std::string currentSensorId = sensor.sensorId;
             break;
         }
     }
@@ -107,6 +108,13 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Inicializar RTD solo si está habilitado en la configuración
     if (rtdSensorEnabled) {
         rtdSensor.begin(MAX31865_4WIRE);
+        // Registrar el estado de inicialización del RTD
+        for (const auto& sensor : enabledNormalSensors) {
+            if (sensor.type == RTD && sensor.enable) {
+                std::string currentSensorId = sensor.sensorId;
+                sensorInitStatus[currentSensorId] = true;
+            }
+        }
     }
 
     // Verificar si hay algún sensor DS18B20
@@ -124,6 +132,14 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
         // Inicializar DS18B20
         dallasTemp.begin();
         dallasTemp.requestTemperatures();
+        
+        // Registrar el estado de inicialización del DS18B20
+        for (const auto& sensor : enabledNormalSensors) {
+            if (sensor.type == DS18B20 && sensor.enable) {
+                std::string currentSensorId = sensor.sensorId;
+                sensorInitStatus[currentSensorId] = true;
+            }
+        }
     }
 
     // Configurar los pines analógicos para cada sensor

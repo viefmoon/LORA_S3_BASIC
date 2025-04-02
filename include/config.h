@@ -69,7 +69,7 @@
 #define SERIAL_BAUD_RATE         115200
 
 // Deep Sleep
-#define DEFAULT_TIME_TO_SLEEP   10
+#define DEFAULT_TIME_TO_SLEEP   30
 
 // Identificadores
 #define DEFAULT_DEVICE_ID   "DEV01"
@@ -239,12 +239,12 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 
 // Configuración default sensores
 #define DEFAULT_SENSOR_CONFIGS { \
-    {"B6", "BM6_1", BME680, false}, \
+    {"B6", "BM6_1", BME680, true}, \
     {"C", "CO2_1", CO2, false}, \
-    {"B2", "BM2_1", BME280, false}, \
+    {"B2", "BM2_1", BME280, true}, \
     {"L", "LUX1", VEML7700, false}, \
     {"SH4", "SH4_1", SHT40, true}, \
-    {"R", "RTD_1",  RTD, false}, \
+    {"R", "RTD_1",  RTD, true}, \
     {"D", "DS_1",   DS18B20, false}, \
     {"SH3", "SH3_1", SHT30, false} \
 }
