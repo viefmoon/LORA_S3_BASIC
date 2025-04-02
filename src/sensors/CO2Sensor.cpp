@@ -7,11 +7,7 @@ extern SCD4x scd4x;
  * @brief Inicializa el sensor SCD4x.
  */
 bool CO2Sensor::begin() {
-    if (!scd4x.begin(false, true, false)) {
-        return false;
-    }
-    ;
-    return true;
+    return scd4x.begin(false, true, false);
 }
 
 /**
@@ -35,10 +31,10 @@ bool CO2Sensor::read(float &outCO2, float &outTemp, float &outHum) {
     
     // Esperar hasta que haya datos disponibles (con timeout)
     uint32_t counter = 0;
-    const uint32_t maxAttempts = 200; // 60 intentos * 100ms = 6 segundos máximo
+    const uint32_t maxAttempts = 200; // 200 intentos * 50ms = 10 segundos máximo
     
     while (counter < maxAttempts) {
-        delay(50); // Esperar 100ms entre comprobaciones
+        delay(50); // Esperar 50ms entre comprobaciones
         counter++;
         
         if (scd4x.readMeasurement()) {
@@ -46,17 +42,10 @@ bool CO2Sensor::read(float &outCO2, float &outTemp, float &outHum) {
             outCO2 = (float)scd4x.getCO2();
             outTemp = scd4x.getTemperature();
             outHum = scd4x.getHumidity();
-            
-            // Imprimir valores leídos para depuración
-            DEBUG_PRINT(F("SCD4x: CO2=")); DEBUG_PRINT(outCO2);
-            DEBUG_PRINT(F(" ppm, Temp=")); DEBUG_PRINT(outTemp);
-            DEBUG_PRINT(F(" °C, Hum=")); DEBUG_PRINT(outHum); DEBUG_PRINTLN(F(" %RH"));
-            
             return true;
         }
     }
     
     // Si llegamos aquí, hubo timeout
-    DEBUG_PRINTLN(F("Timeout esperando medición del SCD4x"));
     return false;
 } 
