@@ -13,6 +13,9 @@
 #include "sensors/NtcManager.h"
 #include <SPI.h>
 #include <Adafruit_MAX31865.h>
+#include <Adafruit_VEML7700.h>
+#include <map>
+#include <string>
 
 // Variables y objetos globales declarados en main.cpp
 extern ESP32Time rtc;
@@ -23,6 +26,8 @@ extern OneWire oneWire;
 extern DallasTemperature dallasTemp;
 extern SHT31 sht30Sensor;
 extern Adafruit_MAX31865 rtdSensor;
+extern Adafruit_VEML7700 veml7700;
+extern std::map<std::string, bool> sensorInitStatus; // Declaración externa del mapa de estado
 
 /**
  * @brief Clase que maneja la inicialización y lecturas de todos los sensores

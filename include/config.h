@@ -138,6 +138,8 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 #define MODBUS_RESPONSE_TIMEOUT 300  // Tiempo de espera para respuesta en ms
 #define MODBUS_MAX_RETRY        3     // Número máximo de intentos de lectura Modbus
 
+// Dirección I2C para BME280
+#define BME280_I2C_ADDR 0x76 
 
 // Tamaños de documentos JSON - Centralizados
 #define JSON_DOC_SIZE_SMALL   300
@@ -228,18 +230,28 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 #define KEY_PH_T3              "ph_t3"
 #define KEY_PH_CT              "ph_ct"
 
+
+// // Configuración default sensores
+// #define  DEFAULT_SENSOR_CONFIGS { \
+//     {"0", "NTC1",  N100K, true}, \
+//     {"1", "NTC2",  N100K, true}, \
+//     {"2", "NTC3",  N10K, true}, \
+//     {"3", "HDS10",  HDS10, true}, \
+//     {"4", "COND",  COND, true}, \
+//     {"5", "SM1",   SOILH, true}, \
+//     {"8", "PH",    PH, true}, \
+//     {"R", "RTD1",  RTD, true}, \
+//     {"D", "DS1",   DS18B20, true}, \
+//     {"I2C", "SHT30", SHT30, true} \
+// }
+
 // Configuración default sensores
-#define  DEFAULT_SENSOR_CONFIGS { \
-    {"0", "NTC1",  N100K, true}, \
-    {"1", "NTC2",  N100K, true}, \
-    {"2", "NTC3",  N10K, true}, \
-    {"3", "HDS10",  HDS10, true}, \
-    {"4", "COND",  COND, true}, \
-    {"5", "SM1",   SOILH, true}, \
-    {"8", "PH",    PH, true}, \
-    {"R", "RTD1",  RTD, true}, \
-    {"D", "DS1",   DS18B20, true}, \
-    {"I2C", "SHT30", SHT30, true} \
+#define DEFAULT_SENSOR_CONFIGS { \
+    {"B", "BME1", BME680, true}, \
+    {"C", "CO2_1", CO2, true}, \
+    {"B2", "BME280_1", BME280, true}, \
+    {"L", "LUX1", VEML7700, true}, \
+    {"SH4", "SHT4X_1", SHT4X, true} \
 }
 
 // Sin sensores Modbus registrados
