@@ -15,9 +15,6 @@ bool SHT4xSensor::begin() {
         return false;
     }
     
-    // Esperar un momento para que el reset tenga efecto
-    delay(10);
-    
     // Realizar una lectura de prueba
     float temp, hum;
     error = sht4xSensor.measureHighPrecision(temp, hum);

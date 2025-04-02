@@ -247,10 +247,10 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 
 // Configuración default sensores
 #define DEFAULT_SENSOR_CONFIGS { \
-    {"B", "BME1", BME680, true}, \
-    {"C", "CO2_1", CO2, true}, \
-    {"B2", "BME280_1", BME280, true}, \
-    {"L", "LUX1", VEML7700, true}, \
+    {"B", "BME1", BME680, false}, \
+    {"C", "CO2_1", CO2, false}, \
+    {"B2", "BME280_1", BME280, false}, \
+    {"L", "LUX1", VEML7700, false}, \
     {"SH4", "SHT4X_1", SHT4X, true} \
 }
 

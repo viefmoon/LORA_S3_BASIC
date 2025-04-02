@@ -32,14 +32,17 @@ extern std::map<std::string, bool> sensorInitStatus;
 class HardwareManager {
 public:
     /**
-     * @brief Inicializa el bus I2C, la expansión de I/O y el PowerManager.
-     * @param ioExpander Referencia al expansor de I/O
+     * @brief Inicializa el hardware básico del sistema: pines GPIO, buses I2C/SPI y Power Manager.
+     * 
+     * Este método configura el hardware de bajo nivel pero ya no inicializa sensores específicos,
+     * esa responsabilidad se ha trasladado a SensorManager.
+     * 
      * @param powerManager Referencia al gestor de energía
-     * @param sht30Sensor Referencia al sensor SHT30
-     * @param bme680Sensor Referencia al sensor BME680
-     * @param bme280Sensor Referencia al sensor BME280
-     * @param veml7700Sensor Referencia al sensor VEML7700
-     * @param sht4xSensor Referencia al sensor SHT4x
+     * @param sht30Sensor Referencia al sensor SHT30 (no se inicializa aquí)
+     * @param bme680Sensor Referencia al sensor BME680 (no se inicializa aquí)
+     * @param bme280Sensor Referencia al sensor BME280 (no se inicializa aquí)
+     * @param veml7700Sensor Referencia al sensor VEML7700 (no se inicializa aquí)
+     * @param sht4xSensor Referencia al sensor SHT4x (no se inicializa aquí)
      * @param spiLora Referencia a la interfaz SPI para LoRa
      * @param enabledNormalSensors Vector con las configuraciones de sensores habilitados
      * @return true si la inicialización fue exitosa, false en caso contrario

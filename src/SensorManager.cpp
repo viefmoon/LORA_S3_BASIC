@@ -43,6 +43,57 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
     // Encender alimentación 3.3V
     powerManager.power3V3On();
     
+    // Inicializar sensores I2C habilitados
+    for (const auto& sensor : enabledNormalSensors) {
+        if (!sensor.enable) continue; // Saltar sensores deshabilitados
+
+        // Obtener el identificador del sensor para mapear su estado
+        std::string currentSensorId = sensor.sensorId;
+        bool success = false;
+
+        switch (sensor.type) {
+            case SHT30:
+                success = sht30Sensor.begin();
+                if (success) sht30Sensor.reset();
+                break;
+            case SHT4X:
+                success = SHT4xSensor::begin();
+                break;
+            case CO2:
+                success = CO2Sensor::begin();
+                break;
+            case BME680:
+                success = bme680Sensor.begin();
+                if (success) {
+                    bme680Sensor.setTemperatureOversampling(BME680_OS_8X);
+                    bme680Sensor.setHumidityOversampling(BME680_OS_2X);
+                    bme680Sensor.setPressureOversampling(BME680_OS_4X);
+                    bme680Sensor.setIIRFilterSize(BME680_FILTER_SIZE_3);
+                    bme680Sensor.setGasHeater(320, 150); // 320°C durante 150 ms
+                }
+                break;
+            case BME280:
+                success = bme280Sensor.begin(BME280_I2C_ADDR, &Wire);
+                if (success) {
+                    bme280Sensor.setSampling(Adafruit_BME280::MODE_FORCED,
+                                          Adafruit_BME280::SAMPLING_X1, // temperature
+                                          Adafruit_BME280::SAMPLING_X1, // pressure
+                                          Adafruit_BME280::SAMPLING_X1, // humidity
+                                          Adafruit_BME280::FILTER_OFF);
+                }
+                break;
+            case VEML7700:
+                success = VEML7700Sensor::begin();
+                break;
+            default:
+                // Para sensores no-I2C, se manejará en las secciones correspondientes abajo
+                continue;
+        }
+        
+        // Actualizar el estado en el mapa global
+        sensorInitStatus[currentSensorId] = success;
+    }
+    
     // Verificar si hay algún sensor RTD
     bool rtdSensorEnabled = false;
     for (const auto& sensor : enabledNormalSensors) {

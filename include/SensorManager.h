@@ -35,7 +35,18 @@ extern std::map<std::string, bool> sensorInitStatus; // Declaración externa del
  */
 class SensorManager {
   public:
-    // Inicializa pines, periféricos (ADC, RTD, etc.), OneWire, etc.
+    /**
+     * @brief Inicializa todos los sensores habilitados en el sistema.
+     * 
+     * Este método se encarga de:
+     * 1. Inicializar sensores I2C (SHT30, SHT4X, CO2, BME680, BME280, VEML7700)
+     * 2. Inicializar sensores RTD si están habilitados
+     * 3. Inicializar sensores DS18B20 si están habilitados
+     * 4. Configurar pines analógicos para sensores específicos (NTC, pH, conductividad, etc.)
+     * 5. Configurar el ADC interno
+     * 
+     * @param enabledNormalSensors Vector con las configuraciones de sensores habilitados
+     */
     static void beginSensors(const std::vector<SensorConfig>& enabledNormalSensors);
 
     // Devuelve la lectura (o lecturas) de un sensor NO-Modbus según su configuración.

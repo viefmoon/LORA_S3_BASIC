@@ -126,7 +126,7 @@ void setup() {
     enabledNormalSensors = ConfigManager::getEnabledSensorConfigs();
     enabledModbusSensors = ConfigManager::getEnabledModbusSensorConfigs();
 
-    // Inicialización de hardware
+    // Inicialización de hardware básico (GPIO, I2C, SPI, etc.)
     if (!HardwareManager::initHardware(powerManager, 
                                      sht30Sensor, 
                                      bme680Sensor, 
@@ -150,11 +150,13 @@ void setup() {
         rtc.setTime(0, 0, 0, 1, 1, 2023);  // 01/01/2023 00:00:00
     }
 
+    // Tiempo hasta que se inicializan los sensores = 4ms
     // Inicializar sensores
     SensorManager::beginSensors(enabledNormalSensors);
 
-    // TIEMPO TRASCURRIDO HASTA EL MOMENTO ≈ 98 ms
-    // Inicializar radio LoRa
+    DEBUG_PRINTLN("Tiempo después de iniciar sensores: " + String(millis() - setupStartTime));
+
+    // Inicializar y activar radio LoRa = 61ms
     int16_t state = radio.begin();
     if (state != RADIOLIB_ERR_NONE) {
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
@@ -165,7 +167,10 @@ void setup() {
     if (state != RADIOLIB_LORAWAN_NEW_SESSION && 
         state != RADIOLIB_LORAWAN_SESSION_RESTORED) {
         SleepManager::goToDeepSleep(timeToSleep, powerManager, &radio, node, LWsession, spiLora);
-    }
+    } 
+    ///
+
+    DEBUG_PRINTLN("Tiempo después de activar radio: " + String(millis() - setupStartTime));
 }
 
 //--------------------------------------------------------------------------------------------
@@ -181,6 +186,7 @@ void loop() {
     // Obtener todas las lecturas de sensores (normales y Modbus)
     std::vector<SensorReading> normalReadings;
     std::vector<ModbusSensorReading> modbusReadings;
+
     SensorManager::getAllSensorReadings(normalReadings, modbusReadings, enabledNormalSensors, enabledModbusSensors);
 
     //Apgar las fuentes de alimentacion de sensores antes de enviar datos
