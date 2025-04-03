@@ -6,6 +6,9 @@
 // Configuración de depuración - Comentar para deshabilitar mensajes de depuración
 #define DEBUG_ENABLED
 
+// Configuración de CPU
+#define CPU_FREQUENCY_MHZ      40      // 40MHz O 80MHz FUNCIONAN BIEN EN BAJO CONSUMO
+
 // Pines one wire
 #define ONE_WIRE_BUS        38
 

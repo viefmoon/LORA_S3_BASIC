@@ -1,9 +1,5 @@
 #include "PowerManager.h"
 
-PowerManager::PowerManager() {
-    // Constructor sin dependencias externas
-}
-
 void PowerManager::begin() {
     // Configurar pines como salidas
     pinMode(POWER_3V3_PIN, OUTPUT);

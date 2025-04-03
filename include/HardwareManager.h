@@ -22,42 +22,19 @@
 #include <map>
 #include <string>
 
-extern SHT31 sht30Sensor;
-extern Adafruit_BME680 bme680Sensor;
-extern Adafruit_BME280 bme280Sensor;
-extern Adafruit_VEML7700 veml7700Sensor;
-extern SensirionI2cSht4x sht40Sensor;
-extern std::map<std::string, bool> sensorInitStatus;
-
 class HardwareManager {
 public:
     /**
-     * @brief Inicializa el hardware básico del sistema: pines GPIO, buses I2C/SPI y Power Manager.
-     * 
-     * Este método configura el hardware de bajo nivel pero ya no inicializa sensores específicos,
-     * esa responsabilidad se ha trasladado a SensorManager.
-     * 
-     * @param powerManager Referencia al gestor de energía
-     * @param sht30Sensor Referencia al sensor SHT30 (no se inicializa aquí)
-     * @param bme680Sensor Referencia al sensor BME680 (no se inicializa aquí)
-     * @param bme280Sensor Referencia al sensor BME280 (no se inicializa aquí)
-     * @param veml7700Sensor Referencia al sensor VEML7700 (no se inicializa aquí)
-     * @param sht40Sensor Referencia al sensor SHT40 (no se inicializa aquí)
-     * @param spiLora Referencia a la interfaz SPI para LoRa
-     * @param enabledNormalSensors Vector con las configuraciones de sensores habilitados
+     * @brief Inicializa el hardware básico del sistema (GPIO, I2C, SPI, etc.)
+     * @param spiLora Referencia al bus SPI para el módulo LoRa
+     * @param enabledNormalSensors Vector de sensores habilitados en la configuración
      * @return true si la inicialización fue exitosa, false en caso contrario
      */
-    static bool initHardware(PowerManager& powerManager, 
-                           SHT31& sht30Sensor, 
-                           Adafruit_BME680& bme680Sensor,
-                           Adafruit_BME280& bme280Sensor,
-                           Adafruit_VEML7700& veml7700Sensor,
-                           SensirionI2cSht4x& sht40Sensor,
-                           SPIClass& spiLora,
+    static bool initHardware(SPIClass& spiLora, 
                            const std::vector<SensorConfig>& enabledNormalSensors);
 
     /**
-     * @brief Inicializa los pines de selección SPI (SS)
+     * @brief Inicializa los pines CS/SS para los dispositivos SPI
      */
     static void initializeSPISSPins();
 

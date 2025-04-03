@@ -33,16 +33,27 @@
 extern Adafruit_BME680 bme680Sensor;
 extern Adafruit_BME280 bme280Sensor;
 extern Adafruit_VEML7700 veml7700;
-extern std::map<std::string, bool> sensorInitStatus;
+
+// Inicialización del mapa estático
+std::map<std::string, bool> SensorManager::sensorInitStatus;
 
 // -------------------------------------------------------------------------------------
 // Métodos de la clase SensorManager
 // -------------------------------------------------------------------------------------
 
+// Implementación de los nuevos métodos para gestionar el estado de inicialización
+bool SensorManager::isSensorInitialized(const std::string& sensorId) {
+    return sensorInitStatus.count(sensorId) > 0 && sensorInitStatus[sensorId];
+}
+
+void SensorManager::setSensorInitialized(const std::string& sensorId, bool initialized) {
+    sensorInitStatus[sensorId] = initialized;
+}
+
 void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalSensors,
                               const std::vector<SensorConfig>& enabledAdcSensors) {
     // Encender alimentación 3.3V
-    powerManager.power3V3On();
+    PowerManager::power3V3On();
     
     // Inicializar sensores I2C habilitados
     for (const auto& sensor : enabledNormalSensors) {
@@ -91,8 +102,8 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
                 continue;
         }
         
-        // Actualizar el estado en el mapa global
-        sensorInitStatus[currentSensorId] = success;
+        // Actualizar el estado en el mapa usando el nuevo método
+        setSensorInitialized(currentSensorId, success);
     }
     
     // Verificar si hay algún sensor RTD
@@ -112,7 +123,7 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
         for (const auto& sensor : enabledNormalSensors) {
             if (sensor.type == RTD && sensor.enable) {
                 std::string currentSensorId = sensor.sensorId;
-                sensorInitStatus[currentSensorId] = true;
+                setSensorInitialized(currentSensorId, true);
             }
         }
     }
@@ -137,7 +148,7 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
         for (const auto& sensor : enabledNormalSensors) {
             if (sensor.type == DS18B20 && sensor.enable) {
                 std::string currentSensorId = sensor.sensorId;
-                sensorInitStatus[currentSensorId] = true;
+                setSensorInitialized(currentSensorId, true);
             }
         }
     }
@@ -168,8 +179,8 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
         std::string currentSensorId = sensor.sensorId;
         bool success = true; // Por defecto éxito para sensores ADC
         
-        // Registrar en el mapa de estado
-        sensorInitStatus[currentSensorId] = success;
+        // Registrar en el mapa de estado usando el nuevo método
+        setSensorInitialized(currentSensorId, success);
     }
 
     // Configurar ADC interno
@@ -193,11 +204,11 @@ SensorReading SensorManager::getSensorReading(const SensorConfig &cfg) {
  * @brief Lógica principal para leer el valor de cada sensor normal (no Modbus) según su tipo.
  */
 float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &reading) {
-    // Verificar si el sensor está en el mapa y si su estado es 'true'
+    // Verificar si el sensor está inicializado usando el nuevo método
     std::string currentSensorId = cfg.sensorId;
     
-    if (sensorInitStatus.count(currentSensorId) == 0 || !sensorInitStatus[currentSensorId]) {
-        // Si el sensor no está en el mapa o su estado es 'false'
+    if (!isSensorInitialized(currentSensorId)) {
+        // Si el sensor no está inicializado
 
         reading.value = NAN; // Asignar NAN al valor principal
         reading.subValues.clear(); // Limpiar subvalores
@@ -546,7 +557,7 @@ void SensorManager::getAllSensorReadings(std::vector<SensorReading>& normalReadi
         }
         
         // Encender alimentación de 12V para sensores Modbus
-        powerManager.power12VOn();
+        PowerManager::power12VOn();
         delay(maxStabilizationTime);
         
         // Inicializar comunicación Modbus antes de comenzar las mediciones
@@ -561,6 +572,6 @@ void SensorManager::getAllSensorReadings(std::vector<SensorReading>& normalReadi
         ModbusSensorManager::endModbus();
         
         // Apagar alimentación de 12V después de completar las lecturas
-        powerManager.power12VOff();
+        PowerManager::power12VOff();
     }
 }

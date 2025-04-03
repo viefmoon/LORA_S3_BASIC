@@ -7,18 +7,12 @@
 #include "debug.h"
 #include <map>
 #include <string>
+#include "SensorManager.h"
 
-// Variables externas
-extern std::map<std::string, bool> sensorInitStatus;
+// Eliminamos la declaración externa del mapa global
 
 // time execution < 10 ms
-bool HardwareManager::initHardware(PowerManager& powerManager, 
-                                 SHT31& sht30Sensor,
-                                 Adafruit_BME680& bme680Sensor,
-                                 Adafruit_BME280& bme280Sensor,
-                                 Adafruit_VEML7700& veml7700Sensor,
-                                 SensirionI2cSht4x& sht40Sensor,
-                                 SPIClass& spiLora, 
+bool HardwareManager::initHardware(SPIClass& spiLora, 
                                  const std::vector<SensorConfig>& enabledNormalSensors) {
     // Configurar GPIO one wire con pull-up
     pinMode(ONE_WIRE_BUS, INPUT_PULLUP);
@@ -40,10 +34,10 @@ bool HardwareManager::initHardware(PowerManager& powerManager,
                 sensor.type == VEML7700) {
                 someI2cSensorEnabled = true;
                 // Asumir fallo inicial para todos los sensores habilitados
-                sensorInitStatus[sensor.sensorId] = false;
+                SensorManager::setSensorInitialized(sensor.sensorId, false);
             } else {
                 // Asumir éxito para sensores no-I2C
-                sensorInitStatus[sensor.sensorId] = true;
+                SensorManager::setSensorInitialized(sensor.sensorId, true);
             }
         }
     }
@@ -60,7 +54,7 @@ bool HardwareManager::initHardware(PowerManager& powerManager,
     initializeSPISSPins();
     
     //Inicializar PowerManager para control de energía
-    powerManager.begin();
+    PowerManager::begin();
     
     return true;
 }
