@@ -87,7 +87,7 @@ std::vector<SensorConfig> enabledAdcSensors;
 // Objetos de sensores de temperatura y humedad
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature dallasTemp(&oneWire);
-SHT31 sht30Sensor(0x44, &Wire);
+SHT31 sht30Sensor(SHT31_I2C_ADDR, &Wire);
 SensirionI2cSht4x sht40Sensor;
 
 // Sensores ambientales

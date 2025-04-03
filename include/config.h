@@ -3,58 +3,21 @@
 
 #define DEVICE_TYPE_ANALOGIC
 
+/******************************************************************************
+ * CONFIGURACIÓN GENERAL DEL SISTEMA
+ ******************************************************************************/
 // Configuración de depuración - Comentar para deshabilitar mensajes de depuración
 #define DEBUG_ENABLED
 
 // Configuración de CPU
 #define CPU_FREQUENCY_MHZ      40      // 40MHz O 80MHz FUNCIONAN BIEN EN BAJO CONSUMO
 
-// Pines one wire
-#define ONE_WIRE_BUS        38
+// Identificadores de dispositivo
+#define DEFAULT_DEVICE_ID   "DEV01"
+#define DEFAULT_STATION_ID  "ST001"
 
-// Pines I2C
-#define I2C_SDA_PIN         48
-#define I2C_SCL_PIN         47
-
-//Serial 1
-#define SERIAL1_RX_PIN      43
-#define SERIAL1_TX_PIN      44
-
-// Pines para activar medición de batería
-#define BATTERY_CONTROL_PIN 37
-
-// Pines analógicos para sensores
-#define NTC100K_0_PIN       3  // IO3
-#define NTC100K_1_PIN       5  // IO5 
-#define NTC10K_PIN          6  // IO6 
-#define PH_SENSOR_PIN       17  // IO17 
-#define COND_SENSOR_PIN     20  // IO20 
-#define HDS10_SENSOR_PIN    7  // IO7 
-#define BATTERY_SENSOR_PIN  1  // IO1 
-#define SOILH_SENSOR_PIN    2  // IO2 // Pin para el sensor de humedad del suelo
-
-// SPI PARA LORA
-#define SPI_LORA_SCK_PIN        9
-#define SPI_LORA_MISO_PIN       11
-#define SPI_LORA_MOSI_PIN       10
-#define LORA_NSS_PIN            8
-#define LORA_BUSY_PIN           13
-#define LORA_RST_PIN            12
-#define LORA_DIO1_PIN           14
-
-#define MAX_LORA_PAYLOAD        200
-
-// SPI PARA RTD
-#define SPI_SCK_PIN        39
-#define SPI_MISO_PIN       40
-#define SPI_MOSI_PIN       41
-
-// SPI Clock
-#define SPI_LORA_CLOCK       1000000
-#define SPI_RTD_CLOCK        1000000
-
-// PT100
-#define PT100_CS_PIN        46
+// Deep Sleep
+#define DEFAULT_TIME_TO_SLEEP   30
 
 // Modo Config
 #define CONFIG_PIN          2
@@ -64,19 +27,47 @@
 #define CONFIG_BLE_WAIT_TIMEOUT     60000   // Tiempo máximo de espera para conexión BLE (60 segundos)
 #define CONFIG_BLE_MAX_CONN_TIME    300000  // Tiempo máximo de conexión BLE activa (5 minutos)
 
-//Leds
-#define LED1_PIN      33
-#define LED2_PIN      34
+// Tamaños de documentos JSON - Centralizados
+#define JSON_DOC_SIZE_SMALL   300
+#define JSON_DOC_SIZE_MEDIUM  1024
+#define JSON_DOC_SIZE_LARGE   2048
 
-// Serial
-#define SERIAL_BAUD_RATE         115200
+/******************************************************************************
+ * CONFIGURACIÓN DE COMUNICACIÓN
+ ******************************************************************************/
+// UART / Serial
+#define SERIAL_BAUD_RATE     115200
+#define SERIAL1_RX_PIN       43
+#define SERIAL1_TX_PIN       44
 
-// Deep Sleep
-#define DEFAULT_TIME_TO_SLEEP   30
+// I2C
+#define I2C_SDA_PIN         48
+#define I2C_SCL_PIN         47
 
-// Identificadores
-#define DEFAULT_DEVICE_ID   "DEV01"
-#define DEFAULT_STATION_ID  "ST001"
+// One Wire
+#define ONE_WIRE_BUS        38
+
+// SPI PARA LORA
+#define SPI_LORA_SCK_PIN    9
+#define SPI_LORA_MISO_PIN   11
+#define SPI_LORA_MOSI_PIN   10
+#define SPI_LORA_CLOCK      1000000
+
+// SPI PARA RTD
+#define SPI_SCK_PIN         39
+#define SPI_MISO_PIN        40
+#define SPI_MOSI_PIN        41
+#define SPI_RTD_CLOCK       1000000
+
+/******************************************************************************
+ * CONFIGURACIÓN DE LORA
+ ******************************************************************************/
+// Pines LoRa
+#define LORA_NSS_PIN        8
+#define LORA_BUSY_PIN       13
+#define LORA_RST_PIN        12
+#define LORA_DIO1_PIN       14
+#define MAX_LORA_PAYLOAD    200
 
 // LoRa (OTAA)
 #define DEFAULT_JOIN_EUI    "00,00,00,00,00,00,00,00"
@@ -88,6 +79,9 @@
 #define LORA_REGION         US915
 #define LORA_SUBBAND        2       // For US915, use 2; for other regions, use 0
 
+/******************************************************************************
+ * CONFIGURACIÓN DE BLUETOOTH (BLE)
+ ******************************************************************************/
 #define BLE_SERVICE_UUID             "180A"
 #define BLE_CHAR_SYSTEM_UUID         "2A37"
 #define BLE_CHAR_SENSORS_UUID        "2A40"
@@ -98,71 +92,51 @@
 #define BLE_CHAR_PH_UUID             "2A3B"
 #define BLE_DEVICE_PREFIX            "AGRICOS-"
 
+/******************************************************************************
+ * CONFIGURACIÓN DE PINES GPIO
+ ******************************************************************************/
+// LEDs
+#define LED1_PIN            33
+#define LED2_PIN            34
+
+// Otros pines
+#define PT100_CS_PIN        46
+#define FLOW_SENSOR_PIN     4
+
+// Gestión de energía
+#define BATTERY_CONTROL_PIN 37
+#define POWER_3V3_PIN       36
+#define POWER_12V_PIN       19
+#define POWER_STABILIZE_DELAY 1
+
+/******************************************************************************
+ * CONFIGURACIÓN DE SENSORES ANALÓGICOS
+ ******************************************************************************/
+// Pines analógicos para sensores
+#define NTC100K_0_PIN       3   // IO3
+#define NTC100K_1_PIN       5   // IO5 
+#define NTC10K_PIN          6   // IO6 
+#define PH_SENSOR_PIN       17  // IO17 
+#define COND_SENSOR_PIN     20  // IO20 
+#define HDS10_SENSOR_PIN    7   // IO7 
+#define BATTERY_SENSOR_PIN  1   // IO1 
+#define SOILH_SENSOR_PIN    2   // IO2 // Pin para el sensor de humedad del suelo
+
+// Límites de temperatura NTC para evitar lecturas erróneas cuando esta desconectado
+#define NTC_TEMP_MIN        -20.0   // Temperatura mínima válida en °C
+#define NTC_TEMP_MAX        100.0   // Temperatura máxima válida en °C
+
+// Configuración MAX31865 para RTD (PT100/PT1000)
+#define RREF               430.0    // Resistencia de referencia en ohms
+#define RNOMINAL           100.0    // Resistencia nominal del sensor a 0°C (100.0 para PT100, 1000.0 para PT1000)
+
+/******************************************************************************
+ * CALIBRACIÓN DE SENSORES
+ ******************************************************************************/
 // Calibración batería
 const double R1 = 100000.0;
 const double R2 = 390000.0;
 const double conversionFactor = 1.0 / (R1 / (R1 + R2));
-
-// Namespaces
-#define NAMESPACE_SYSTEM        "system"
-#define NAMESPACE_SENSORS       "sensors"
-#define NAMESPACE_LORAWAN       "lorawan"
-#define NAMESPACE_LORA_SESSION  "lorasession"
-#define NAMESPACE_SENSORS_MODBUS "sensors_modbus"
-#define NAMESPACE_SENSORS_ADC    "sensors_adc"
-
-// Claves
-#define KEY_INITIALIZED         "initialized"
-#define KEY_SLEEP_TIME          "sleep_time"
-#define KEY_STATION_ID          "stationId"
-#define KEY_DEVICE_ID           "deviceId"
-#define KEY_VOLT                "volt"
-#define KEY_SENSOR              "k"
-#define KEY_SENSOR_ID           "id"
-#define KEY_SENSOR_ID_TEMPERATURE_SENSOR "ts"
-#define KEY_SENSOR_TYPE         "t"
-#define KEY_SENSOR_ENABLE       "e"
-#define KEY_LORA_JOIN_EUI       "joinEUI"
-#define KEY_LORA_DEV_EUI        "devEUI"
-#define KEY_LORA_NWK_KEY        "nwkKey"
-#define KEY_LORA_APP_KEY        "appKey"
-#define KEY_LORAWAN_SESSION     "lorawan_session"
-
-// Claves para Modbus
-#define KEY_MODBUS_SENSOR_ID    "id"
-#define KEY_MODBUS_SENSOR_TYPE  "t"
-#define KEY_MODBUS_SENSOR_ADDR  "a"
-#define KEY_MODBUS_SENSOR_ENABLE "e"
-
-// Configuración Modbus
-#define MODBUS_RX_PIN           21
-#define MODBUS_TX_PIN           26
-#define MODBUS_BAUD_RATE        9600
-#define MODBUS_SERIAL_CONFIG    SERIAL_8N1
-#define MODBUS_RESPONSE_TIMEOUT 300  // Tiempo de espera para respuesta en ms
-#define MODBUS_MAX_RETRY        3     // Número máximo de intentos de lectura Modbus
-
-// Dirección I2C para BME280
-#define BME280_I2C_ADDR 0x76 
-
-// Tamaños de documentos JSON - Centralizados
-#define JSON_DOC_SIZE_SMALL   300
-#define JSON_DOC_SIZE_MEDIUM  1024
-#define JSON_DOC_SIZE_LARGE   2048
-
-// Batería
-#define POWER_3V3_PIN           36
-#define POWER_12V_PIN           19
-#define POWER_STABILIZE_DELAY   1
-
-// FlowSensor
-#define FLOW_SENSOR_PIN         4
-
-// Namespaces analógicos
-#define NAMESPACE_NTC100K   "ntc_100k"
-#define NAMESPACE_NTC10K    "ntc_10k"
-#define NAMESPACE_COND      "cond"
-#define NAMESPACE_PH        "ph"
 
 // Calibración NTC 100K
 #define DEFAULT_T1_100K     25.0
@@ -191,55 +165,117 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
 #define CONDUCTIVITY_DEFAULT_TEMP  24.22f
 
 // Calibración pH
-#define PH_DEFAULT_V1          0.4425
-#define PH_DEFAULT_T1          4.01
-#define PH_DEFAULT_V2          0.001
-#define PH_DEFAULT_T2          6.86
-#define PH_DEFAULT_V3         -0.32155
-#define PH_DEFAULT_T3          9.18
-#define PH_DEFAULT_TEMP        25.0
+#define PH_DEFAULT_V1       0.4425
+#define PH_DEFAULT_T1       4.01
+#define PH_DEFAULT_V2       0.001
+#define PH_DEFAULT_T2       6.86
+#define PH_DEFAULT_V3       -0.32155
+#define PH_DEFAULT_T3       9.18
+#define PH_DEFAULT_TEMP     25.0
 
-// Claves NTC100K
-#define KEY_NTC100K_T1         "n100k_t1"
-#define KEY_NTC100K_R1         "n100k_r1"
-#define KEY_NTC100K_T2         "n100k_t2"
-#define KEY_NTC100K_R2         "n100k_r2"
-#define KEY_NTC100K_T3         "n100k_t3"
-#define KEY_NTC100K_R3         "n100k_r3"
+/******************************************************************************
+ * CONFIGURACIÓN DE MODBUS
+ ******************************************************************************/
+// Pines y configuración Modbus
+#define MODBUS_RX_PIN       21
+#define MODBUS_TX_PIN       26
+#define MODBUS_BAUD_RATE    9600
+#define MODBUS_SERIAL_CONFIG SERIAL_8N1
+#define MODBUS_RESPONSE_TIMEOUT 300  // Tiempo de espera para respuesta en ms
+#define MODBUS_MAX_RETRY    3        // Número máximo de intentos de lectura Modbus
 
-// Claves NTC10K
-#define KEY_NTC10K_T1          "n10k_t1"
-#define KEY_NTC10K_R1          "n10k_r1"
-#define KEY_NTC10K_T2          "n10k_t2"
-#define KEY_NTC10K_R2          "n10k_r2"
-#define KEY_NTC10K_T3          "n10k_t3"
-#define KEY_NTC10K_R3          "n10k_r3"
+// Dirección I2C para BME280
+#define BME280_I2C_ADDR     0x76 
 
-// Claves Conductividad
-#define KEY_CONDUCT_CT         "c_ct"
-#define KEY_CONDUCT_CC         "c_cc"
-#define KEY_CONDUCT_V1         "c_v1"
-#define KEY_CONDUCT_T1         "c_t1"
-#define KEY_CONDUCT_V2         "c_v2"
-#define KEY_CONDUCT_T2         "c_t2"
-#define KEY_CONDUCT_V3         "c_v3"
-#define KEY_CONDUCT_T3         "c_t3"
+// Dirección I2C para SHT31
+#define SHT31_I2C_ADDR      0x44
 
-// Claves pH
-#define KEY_PH_V1              "ph_v1"
-#define KEY_PH_T1              "ph_t1"
-#define KEY_PH_V2              "ph_v2"
-#define KEY_PH_T2              "ph_t2"
-#define KEY_PH_V3              "ph_v3"
-#define KEY_PH_T3              "ph_t3"
-#define KEY_PH_CT              "ph_ct"
+/******************************************************************************
+ * NAMESPACES Y CLAVES PARA ALMACENAMIENTO
+ ******************************************************************************/
+// Namespaces
+#define NAMESPACE_SYSTEM        "system"
+#define NAMESPACE_SENSORS       "sensors"
+#define NAMESPACE_LORAWAN       "lorawan"
+#define NAMESPACE_LORA_SESSION  "lorasession"
+#define NAMESPACE_SENSORS_MODBUS "sensors_modbus"
+#define NAMESPACE_SENSORS_ADC    "sensors_adc"
+#define NAMESPACE_NTC100K       "ntc_100k"
+#define NAMESPACE_NTC10K        "ntc_10k"
+#define NAMESPACE_COND          "cond"
+#define NAMESPACE_PH            "ph"
+
+// Claves generales
+#define KEY_INITIALIZED         "initialized"
+#define KEY_SLEEP_TIME          "sleep_time"
+#define KEY_STATION_ID          "stationId"
+#define KEY_DEVICE_ID           "deviceId"
+#define KEY_VOLT                "volt"
+
+// Claves para sensores
+#define KEY_SENSOR              "k"
+#define KEY_SENSOR_ID           "id"
+#define KEY_SENSOR_ID_TEMPERATURE_SENSOR "ts"
+#define KEY_SENSOR_TYPE         "t"
+#define KEY_SENSOR_ENABLE       "e"
+
+// Claves para LoRa
+#define KEY_LORA_JOIN_EUI       "joinEUI"
+#define KEY_LORA_DEV_EUI        "devEUI"
+#define KEY_LORA_NWK_KEY        "nwkKey"
+#define KEY_LORA_APP_KEY        "appKey"
+#define KEY_LORAWAN_SESSION     "lorawan_session"
+
+// Claves para Modbus
+#define KEY_MODBUS_SENSOR_ID    "id"
+#define KEY_MODBUS_SENSOR_TYPE  "t"
+#define KEY_MODBUS_SENSOR_ADDR  "a"
+#define KEY_MODBUS_SENSOR_ENABLE "e"
 
 // Claves para sensores ADC
-#define KEY_ADC_SENSOR      "k"
-#define KEY_ADC_SENSOR_ID   "id"
-#define KEY_ADC_SENSOR_TYPE "t"
-#define KEY_ADC_SENSOR_ENABLE "e"
+#define KEY_ADC_SENSOR          "k"
+#define KEY_ADC_SENSOR_ID       "id"
+#define KEY_ADC_SENSOR_TYPE     "t"
+#define KEY_ADC_SENSOR_ENABLE   "e"
 
+// Claves NTC100K
+#define KEY_NTC100K_T1          "n100k_t1"
+#define KEY_NTC100K_R1          "n100k_r1"
+#define KEY_NTC100K_T2          "n100k_t2"
+#define KEY_NTC100K_R2          "n100k_r2"
+#define KEY_NTC100K_T3          "n100k_t3"
+#define KEY_NTC100K_R3          "n100k_r3"
+
+// Claves NTC10K
+#define KEY_NTC10K_T1           "n10k_t1"
+#define KEY_NTC10K_R1           "n10k_r1"
+#define KEY_NTC10K_T2           "n10k_t2"
+#define KEY_NTC10K_R2           "n10k_r2"
+#define KEY_NTC10K_T3           "n10k_t3"
+#define KEY_NTC10K_R3           "n10k_r3"
+
+// Claves Conductividad
+#define KEY_CONDUCT_CT          "c_ct"
+#define KEY_CONDUCT_CC          "c_cc"
+#define KEY_CONDUCT_V1          "c_v1"
+#define KEY_CONDUCT_T1          "c_t1"
+#define KEY_CONDUCT_V2          "c_v2"
+#define KEY_CONDUCT_T2          "c_t2"
+#define KEY_CONDUCT_V3          "c_v3"
+#define KEY_CONDUCT_T3          "c_t3"
+
+// Claves pH
+#define KEY_PH_V1               "ph_v1"
+#define KEY_PH_T1               "ph_t1"
+#define KEY_PH_V2               "ph_v2"
+#define KEY_PH_T2               "ph_t2"
+#define KEY_PH_V3               "ph_v3"
+#define KEY_PH_T3               "ph_t3"
+#define KEY_PH_CT               "ph_ct"
+
+/******************************************************************************
+ * CONFIGURACIÓN DEFAULT DE SENSORES
+ ******************************************************************************/
 // Configuración default sensores
 #define DEFAULT_SENSOR_CONFIGS { \
     {"B6", "BM6_1", BME680, true}, \
@@ -252,7 +288,7 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
     {"SH3", "SH3_1", SHT30, false} \
 }
 
-// Sin sensores Modbus registrados
+// Configuración default sensores Modbus
 #define DEFAULT_MODBUS_SENSOR_CONFIGS { \
     {"ModbusEnv1", ENV4, 1, false} \
 }
@@ -267,13 +303,5 @@ const double conversionFactor = 1.0 / (R1 / (R1 + R2));
     {"5", "SM1",   SOILH, false}, \
     {"8", "PH",    PH, false} \
 }
-
-// Límites de temperatura NTC para evitar lecturas erróneas cuando esta desconectado
-#define NTC_TEMP_MIN           -20.0   // Temperatura mínima válida en °C
-#define NTC_TEMP_MAX            100.0   // Temperatura máxima válida en °C
-
-// Configuración MAX31865 para RTD (PT100/PT1000)
-#define RREF      430.0         // Resistencia de referencia en ohms
-#define RNOMINAL  100.0         // Resistencia nominal del sensor a 0°C (100.0 para PT100, 1000.0 para PT1000)
 
 #endif // CONFIG_H
