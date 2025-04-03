@@ -5,7 +5,6 @@
 #include "config.h"
 #include "debug.h"
 
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
 #include <DallasTemperature.h>
 
 // Variable externa
@@ -23,7 +22,5 @@ public:
      */
     static float read();
 };
-
-#endif // defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
 
 #endif // DS18B20_SENSOR_H 

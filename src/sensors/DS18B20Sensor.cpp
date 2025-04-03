@@ -1,7 +1,5 @@
 #include "sensors/DS18B20Sensor.h"
 
-#if defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC)
-
 /**
  * @brief Lee la temperatura del sensor DS18B20
  * 
@@ -14,7 +12,4 @@ float DS18B20Sensor::read() {
         return NAN;
     }
     return temp;
-}
-
-
-#endif // defined(DEVICE_TYPE_BASIC) || defined(DEVICE_TYPE_ANALOGIC) 
+} 

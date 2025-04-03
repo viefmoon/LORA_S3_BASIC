@@ -1,8 +1,6 @@
 #include "ModbusSensorManager.h"
 #include "config.h"    // Para MODBUS_BAUD_RATE y MODBUS_SERIAL_CONFIG
 
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
-
 #include "ModbusMaster.h"
 #include "debug.h"     // Para DEBUG_END
 #include "sensor_types.h" // Para todos los tipos y constantes de sensores
@@ -140,5 +138,3 @@ ModbusSensorReading ModbusSensorManager::readEnvSensor(const ModbusSensorConfig 
     
     return reading;
 }
-
-#endif // defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)

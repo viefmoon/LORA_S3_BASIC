@@ -6,8 +6,6 @@
 #include "sensor_types.h"
 #include "config.h"  // Para las definiciones de tipo de dispositivo
 
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
-
 /**
  * @brief Clase para manejar la lectura de sensores Modbus.
  *        Usa Serial2 con pines configurables para RX/TX.
@@ -48,7 +46,5 @@ private:
      */
     static bool readHoldingRegisters(uint8_t address, uint16_t startReg, uint16_t numRegs, uint16_t* outData);
 };
-
-#endif // defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 
 #endif // MODBUS_SENSOR_MANAGER_H

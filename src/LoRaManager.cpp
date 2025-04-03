@@ -261,7 +261,6 @@ size_t LoRaManager::createDelimitedPayload(
     return offset;
 }
 
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 /**
  * @brief Crea un payload optimizado con formato delimitado para sensores normales y Modbus.
  * @param normalReadings Vector con lecturas de sensores normales.
@@ -356,7 +355,6 @@ size_t LoRaManager::createDelimitedPayload(
     
     return offset;
 }
-#endif
 
 /**
  * @brief Envía el payload de sensores estándar usando formato delimitado.
@@ -418,7 +416,6 @@ void LoRaManager::sendDelimitedPayload(
     }
 }
 
-#if defined(DEVICE_TYPE_ANALOGIC) || defined(DEVICE_TYPE_MODBUS)
 /**
  * @brief Envía el payload de sensores estándar, Modbus y ADC usando formato delimitado.
  * @param normalReadings Vector con lecturas de sensores estándar
@@ -535,7 +532,6 @@ void LoRaManager::sendDelimitedPayload(
         DEBUG_PRINTF("Error en transmisión: %d\n", state);
     }
 }
-#endif
 
 void LoRaManager::prepareForSleep(SX1262* radio) {
     if (radio) {
