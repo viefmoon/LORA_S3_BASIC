@@ -5,7 +5,6 @@
 #include "driver/rtc_io.h"
 
 void SleepManager::goToDeepSleep(uint32_t timeToSleep, 
-                               PowerManager& powerManager,
                                SX1262* radio,
                                LoRaWANNode& node,
                                uint8_t* LWsession,
@@ -130,4 +129,25 @@ void SleepManager::releaseHeldPins() {
     // Liberar otros pines si se ha aplicado retención
     gpio_hold_dis((gpio_num_t)LORA_NSS_PIN);
     gpio_hold_dis((gpio_num_t)PT100_CS_PIN);
+}
+
+/**
+ * @brief Maneja y determina la causa del despertar del dispositivo.
+ * @param wokeFromConfigPin Referencia a la bandera que indica si el dispositivo despertó por el pin de configuración.
+ */
+void SleepManager::handleWakeupCause(bool& wokeFromConfigPin) {
+    esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+    
+    if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
+        DEBUG_PRINTLN("INFO: Despertado por EXT0 (CONFIG_PIN)");
+        wokeFromConfigPin = true;
+        // Pequeño delay para estabilizar/debounce inicial
+        delay(50);
+    } else if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
+        DEBUG_PRINTLN("INFO: Despertado por Timer");
+        wokeFromConfigPin = false;
+    } else {
+        DEBUG_PRINTF("INFO: Despertado por otra razón: %d\n", wakeup_reason);
+        wokeFromConfigPin = false;
+    }
 }

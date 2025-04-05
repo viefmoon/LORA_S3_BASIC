@@ -6,10 +6,6 @@
 #define POWER_STABILIZE_DELAY 1
 #endif
 
-PowerManager::PowerManager() {
-    // Constructor sin dependencias externas
-}
-
 void PowerManager::begin() {
     // Configurar pines como salidas
     pinMode(POWER_3V3_PIN, OUTPUT);

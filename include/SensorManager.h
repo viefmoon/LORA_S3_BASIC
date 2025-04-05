@@ -16,10 +16,11 @@
 #include <Adafruit_VEML7700.h>
 #include <map>
 #include <string>
+#include <Adafruit_BME680.h>
+#include <Adafruit_BME280.h>
 
 // Variables y objetos globales declarados en main.cpp
 extern ESP32Time rtc;
-extern PowerManager powerManager;
 extern SPIClass spiLora;
 extern SPISettings spiAdcSettings;
 extern OneWire oneWire;
@@ -27,7 +28,6 @@ extern DallasTemperature dallasTemp;
 extern SHT31 sht30Sensor;
 extern Adafruit_MAX31865 rtdSensor;
 extern Adafruit_VEML7700 veml7700;
-extern std::map<std::string, bool> sensorInitStatus; // Declaración externa del mapa de estado
 
 /**
  * @brief Clase que maneja la inicialización y lecturas de todos los sensores
@@ -65,9 +65,28 @@ class SensorManager {
                                     const std::vector<ModbusSensorConfig>& enabledModbusSensors,
                                     const std::vector<SensorConfig>& enabledAdcSensors);
 
+    /**
+     * @brief Verifica si un sensor específico fue inicializado correctamente
+     * 
+     * @param sensorId Identificador del sensor a verificar
+     * @return true si el sensor fue inicializado correctamente, false en caso contrario
+     */
+    static bool isSensorInitialized(const std::string& sensorId);
+
+    /**
+     * @brief Registra el estado de inicialización de un sensor
+     * 
+     * @param sensorId Identificador del sensor
+     * @param initialized Estado de inicialización (true = inicializado correctamente)
+     */
+    static void setSensorInitialized(const std::string& sensorId, bool initialized);
+
   private:
     // Métodos de lectura internos
     static float readSensorValue(const SensorConfig &cfg, SensorReading &reading);
+    
+    // Mapa estático para almacenar el estado de inicialización de los sensores
+    static std::map<std::string, bool> sensorInitStatus;
 };
 
 #endif // SENSOR_MANAGER_H

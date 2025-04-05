@@ -22,14 +22,12 @@ public:
     /**
      * @brief Configura y entra en modo deep sleep.
      * @param timeToSleep Tiempo en segundos para permanecer en deep sleep
-     * @param powerManager Referencia al gestor de energía
      * @param radio Puntero al módulo de radio LoRa
      * @param node Referencia al nodo LoRaWAN para guardar sesión
      * @param LWsession Buffer para almacenar la sesión LoRaWAN
      * @param spiLora Referencia al objeto SPI para LoRa
      */
     static void goToDeepSleep(uint32_t timeToSleep, 
-                             PowerManager& powerManager,
                              SX1262* radio,
                              LoRaWANNode& node,
                              uint8_t* LWsession,
@@ -45,6 +43,12 @@ public:
      * Esto permite que los pines puedan ser reconfigurados adecuadamente tras salir del deep sleep.
      */
     static void releaseHeldPins();
+
+    /**
+     * @brief Maneja y determina la causa del despertar del dispositivo.
+     * @param wokeFromConfigPin Referencia a la bandera que indica si el dispositivo despertó por el pin de configuración.
+     */
+    static void handleWakeupCause(bool& wokeFromConfigPin);
 };
 
 #endif // SLEEP_MANAGER_H
