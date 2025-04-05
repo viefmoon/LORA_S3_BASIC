@@ -1,6 +1,9 @@
 #ifndef SYSTEM_CONFIG_H
 #define SYSTEM_CONFIG_H
 
+// Configuración de la CPU
+#define CPU_FREQUENCY_MHZ      40  // Frecuencia del CPU en MHz (40MHz o 80MHz funcionan bien en bajo consumo)
+
 // Configuración de depuración - Comentar para deshabilitar mensajes de depuración
 #define DEBUG_ENABLED
 

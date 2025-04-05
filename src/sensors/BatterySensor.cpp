@@ -1,6 +1,6 @@
 #include "sensors/BatterySensor.h"
 // No necesita incluir config/pins_config.h ya que se incluye en el .h
-#include "config/calibration_defaults.h" // Para las constantes R1 y R2
+#include "config/calibration_defaults.h" // Para las constantes BATTERY_R1 y BATTERY_R2
 
 /**
  * @brief Lee el voltaje de la batería
@@ -48,5 +48,5 @@ float BatterySensor::readVoltage() {
 float BatterySensor::calculateBatteryVoltage(float adcVoltage) {
     // VBAT = 100k / (100k+390k) * VADC_IN1 corregido a:
     // VBAT = VADC_IN1 / (100k / (100k+390k))
-    return adcVoltage / (R1 / (R1 + R2));
+    return adcVoltage / (BATTERY_R1 / (BATTERY_R1 + BATTERY_R2));
 } 

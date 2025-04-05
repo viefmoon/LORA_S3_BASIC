@@ -1,8 +1,9 @@
 #ifndef SENSOR_DEFAULTS_H
 #define SENSOR_DEFAULTS_H
 
-// Dirección I2C para BME280
+// Direcciones I2C para sensores
 #define BME280_I2C_ADDR 0x76
+#define SHT31_I2C_ADDR  0x44   // Dirección I2C para SHT31
 
 // Configuración MAX31865 para RTD (PT100/PT1000)
 #define RREF      430.0         // Resistencia de referencia en ohms

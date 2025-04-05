@@ -2,9 +2,9 @@
 #define CALIBRATION_DEFAULTS_H
 
 // Calibración batería
-const double R1 = 100000.0;
-const double R2 = 390000.0;
-const double conversionFactor = 1.0 / (R1 / (R1 + R2));
+#define BATTERY_R1 100000.0     // Resistencia de 100K a GND
+#define BATTERY_R2 390000.0     // Resistencia de 390K a batería 
+#define BATTERY_CONVERSION_FACTOR 1.0 / (BATTERY_R1 / (BATTERY_R1 + BATTERY_R2))
 
 // Calibración NTC 100K
 #define DEFAULT_T1_100K     25.0
