@@ -2,7 +2,7 @@
 #define CO2_SENSOR_H
 
 #include <Arduino.h>
-#include "config.h"
+#include "config/pins_config.h"
 #include "debug.h"
 #include "SparkFun_SCD4x_Arduino_Library.h"
 

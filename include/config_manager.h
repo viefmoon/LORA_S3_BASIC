@@ -4,7 +4,15 @@
 #include <Arduino.h>  // Se incluye para utilizar el tipo String
 #include "sensor_types.h"
 #include <RadioLib.h> // Añadido para RADIOLIB_LORAWAN_SESSION_BUF_SIZE
-#include "config.h"
+
+// Incluimos los archivos de configuración necesarios
+#include "config/system_config.h"
+#include "config/json_keys.h"
+#include "config/lora_config.h"
+#include "config/sensor_default_configs.h"
+#include "config/calibration_defaults.h"
+#include "config/sensor_defaults.h"
+#include "config/pins_config.h"
 
 // Definición de la estructura para la configuración de LoRa
 struct LoRaConfig {

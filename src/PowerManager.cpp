@@ -1,4 +1,10 @@
 #include "PowerManager.h"
+#include "config/sensor_defaults.h" // Para POWER_STABILIZE_DELAY
+
+// Definir constante localmente (no redefinir si ya existe)
+#ifndef POWER_STABILIZE_DELAY
+#define POWER_STABILIZE_DELAY 1
+#endif
 
 PowerManager::PowerManager() {
     // Constructor sin dependencias externas

@@ -1,7 +1,7 @@
 #include "sensors/HDS10Sensor.h"
 
 #include <cmath>
-#include "config.h"
+#include "config/pins_config.h"
 
 /**
  * @brief Convierte la resistencia del sensor HDS10 a porcentaje de humedad usando interpolación logarítmica

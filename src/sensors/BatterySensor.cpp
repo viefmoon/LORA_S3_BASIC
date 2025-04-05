@@ -1,5 +1,6 @@
 #include "sensors/BatterySensor.h"
-#include "config.h"
+// No necesita incluir config/pins_config.h ya que se incluye en el .h
+#include "config/calibration_defaults.h" // Para las constantes R1 y R2
 
 /**
  * @brief Lee el voltaje de la batería

@@ -11,7 +11,7 @@
 #include <RadioLib.h>
 #include <ESP32Time.h>
 #include "utilities.h"  // Incluido para acceder a formatFloatTo3Decimals
-#include "config.h"     // Incluido para acceder a MAX_PAYLOAD
+#include "config/lora_config.h"  // Incluido para acceder a MAX_LORA_PAYLOAD
 #include "sensor_types.h"  // Incluido para acceder a ModbusSensorReading
 #include "config_manager.h"
 #include "sensors/BatterySensor.h"

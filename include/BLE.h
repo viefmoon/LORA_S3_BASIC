@@ -7,7 +7,9 @@
 #include <BLEAdvertising.h>
 #include <BLECharacteristic.h>
 #include <ArduinoJson.h>
-#include "config.h"
+#include "config/pins_config.h"
+#include "config/ble_config.h"
+#include "config/json_keys.h"
 #include "config_manager.h"
 #include "debug.h"
 

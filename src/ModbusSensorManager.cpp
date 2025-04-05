@@ -1,5 +1,6 @@
 #include "ModbusSensorManager.h"
-#include "config.h"    // Para MODBUS_BAUD_RATE y MODBUS_SERIAL_CONFIG
+#include "config/system_config.h"  // Para MODBUS_BAUD_RATE y MODBUS_SERIAL_CONFIG
+#include "config/pins_config.h"    // Para MODBUS_RX_PIN y MODBUS_TX_PIN
 
 #include "ModbusMaster.h"
 #include "debug.h"     // Para DEBUG_END

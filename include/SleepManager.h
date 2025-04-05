@@ -11,7 +11,8 @@
 #include "esp_sleep.h"
 #include "driver/gpio.h"
 #include "PowerManager.h"
-#include "config.h"
+#include "config/pins_config.h"
+#include "config/system_config.h"
 #include <RadioLib.h>
 #include <SPI.h>
 #include <Wire.h>

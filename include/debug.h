@@ -7,7 +7,7 @@
 #define DEBUG_H
 
 #include <Arduino.h>
-#include "config.h"
+#include "config/system_config.h"
 
 // Si DEBUG_ENABLED está definido en config.h, las macros de depuración estarán activas
 // Si no está definido, las macros se compilarán como código vacío

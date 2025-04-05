@@ -4,7 +4,6 @@
 #include <Arduino.h>
 #include <vector>
 #include "sensor_types.h"
-#include "config.h"  // Para las definiciones de tipo de dispositivo
 
 /**
  * @brief Clase para manejar la lectura de sensores Modbus.

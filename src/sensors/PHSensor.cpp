@@ -2,7 +2,8 @@
 
 #include <cmath>
 #include "sensors/NtcManager.h"
-#include "config.h"
+#include "config/pins_config.h"
+#include "config_manager.h"
 
 /**
  * @brief Convierte el voltaje medido a valor de pH

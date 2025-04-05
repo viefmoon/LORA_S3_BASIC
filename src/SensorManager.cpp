@@ -4,7 +4,8 @@
 #include <cmath>  // Para fabs() y otras funciones matemáticas
 #include <DallasTemperature.h>
 #include "sensor_types.h"
-#include "config.h"
+#include "config/pins_config.h"
+#include "config/sensor_defaults.h"
 #include <Preferences.h>
 #include "config_manager.h"
 #include "debug.h"

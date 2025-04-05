@@ -4,7 +4,9 @@
  *******************************************************************************************/
 
 #include "BLE.h"
-#include "config.h" // Asegúrate de incluir config.h para CONFIG_PIN y CONFIG_TRIGGER_TIME
+#include "config/pins_config.h" // Para CONFIG_PIN y CONFIG_LED_PIN
+#include "config/ble_config.h"  // Para BLE_DEVICE_PREFIX y CONFIG_TRIGGER_TIME
+#include "config/json_keys.h"   // Para JSON_DOC_SIZE_LARGE y constantes de claves JSON
 #include "debug.h"  // Para los mensajes DEBUG_*
 
 // Inicialización de variables estáticas

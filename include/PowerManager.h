@@ -2,7 +2,7 @@
 #define POWER_MANAGER_H
 
 #include <Arduino.h>
-#include "config.h"
+#include "config/pins_config.h"
 
 class PowerManager {
 private:

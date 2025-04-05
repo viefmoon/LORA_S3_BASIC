@@ -1,10 +1,10 @@
 #include "config_manager.h"
 #include <ArduinoJson.h>
 #include <vector>
-#include "config.h"
 #include "sensor_types.h"
 #include <Preferences.h>
 #include <Arduino.h> // Incluido para usar Serial
+#include "config/calibration_defaults.h" // Incluido para acceder a las constantes de calibración
 
 /* =========================================================================
    FUNCIONES AUXILIARES

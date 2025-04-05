@@ -2,7 +2,8 @@
 #include <cmath>  // Para fabs() y otras funciones matemáticas
 #include "config_manager.h"
 #include "debug.h"
-#include "config.h"  // Para acceder a NTC_TEMP_MIN y NTC_TEMP_MAX
+#include "config/sensor_defaults.h"  // Para NTC_TEMP_MIN y NTC_TEMP_MAX
+#include "config/pins_config.h"      // Para NTC100K_0_PIN, NTC100K_1_PIN y NTC10K_PIN
 
 void NtcManager::calculateSteinhartHartCoeffs(double T1, double R1,
                                           double T2, double R2,

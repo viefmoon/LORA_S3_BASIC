@@ -3,8 +3,11 @@
 
 #include <stdint.h>
 #include <vector>
-#include "config.h"
 #include <map>
+
+// Incluimos los archivos de configuración específicos en lugar de config.h
+#include "config/system_config.h"
+#include "config/sensor_defaults.h"
 
 /************************************************************************
  * TIEMPOS DE ESTABILIZACIÓN PARA SENSORES MODBUS (en ms)

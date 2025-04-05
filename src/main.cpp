@@ -10,7 +10,9 @@
 #include <map>
 #include <string>
 
-#include "config.h"
+#include "config/pins_config.h"
+#include "config/system_config.h"
+#include "config/lora_config.h"
 #include "debug.h"
 #include "PowerManager.h"
 #include <RadioLib.h>

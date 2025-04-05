@@ -2,7 +2,7 @@
 #define SHT30_SENSOR_H
 
 #include <Arduino.h>
-#include "config.h"
+#include "config/sensor_defaults.h"
 #include "debug.h"
 #include "SHT31.h"
 
