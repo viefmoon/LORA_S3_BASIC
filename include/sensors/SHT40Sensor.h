@@ -2,6 +2,7 @@
 #define SHT40_SENSOR_H
 
 #include <Arduino.h>
+#include "sensors/ISensor.h"
 #include "config.h"
 #include "debug.h"
 #include <SensirionI2cSht4x.h>
@@ -9,26 +10,15 @@
 // Variable externa del sensor SHT40 que será declarada en otro lugar
 extern SensirionI2cSht4x sht40Sensor;
 
-/**
- * @brief Clase para manejar el sensor de temperatura y humedad SHT40
- */
-class SHT40Sensor {
-public:
-    /**
-     * @brief Inicializa el sensor SHT40
-     * 
-     * @return true si se inicializó correctamente, false en caso contrario
-     */
-    static bool begin();
+class SHT40Sensor : public ISensor {
+public:    explicit SHT40Sensor(const std::string& id);
 
-    /**
-     * @brief Lee temperatura y humedad del sensor SHT40
-     * 
-     * @param outTemp Variable donde se almacenará la temperatura en °C
-     * @param outHum Variable donde se almacenará la humedad relativa en %
-     * @return true si la lectura fue exitosa, false en caso contrario
-     */
-    static bool read(float &outTemp, float &outHum);
+    bool begin() override;
+    SensorReading read() override;
+    const std::string& getId() const override { return _id; }
+    SensorType getType() const override { return _type; }
+    CommunicationProtocol getProtocol() const override { return CommunicationProtocol::I2C; }
+    PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_MAIN; }
 };
 
-#endif // SHT40_SENSOR_H 
+#endif // SHT40_SENSOR_H

@@ -5,57 +5,90 @@
 
 #include "HardwareManager.h"
 #include "debug.h"
-#include <map>
-#include <string>
+#include "ModbusSensorManager.h"
 #include "SensorManager.h"
 
-// Eliminamos la declaración externa del mapa global
+// Inicialización de variables estáticas
+bool HardwareManager::i2cInitialized = false;
+bool HardwareManager::oneWireInitialized = false;
+bool HardwareManager::modbusInitialized = false;
+bool HardwareManager::analogInitialized = false;
+bool HardwareManager::spiInitialized = false;
 
-// time execution < 10 ms
-bool HardwareManager::initHardware(SPIClass& spiLora, 
-                                 const std::vector<SensorConfig>& enabledNormalSensors) {
+// Inicializa componentes básicos
+void HardwareManager::initialize() {
     // Configurar GPIO one wire con pull-up
     pinMode(Pins::ONE_WIRE_BUS, INPUT_PULLUP);
-    
+
     // Inicializar el pin de control de batería y desactivar la medición
     pinMode(Pins::BATTERY_CONTROL, OUTPUT);
     digitalWrite(Pins::BATTERY_CONTROL, HIGH);
     pinMode(Pins::CONFIG_LED, OUTPUT);
     digitalWrite(Pins::CONFIG_LED, LOW); // Apagar LED inicialmente
-    
-    // Verificar si hay algún sensor I2C habilitado
-    bool someI2cSensorEnabled = false;
 
-    // Primero, determinar si algún sensor I2C está habilitado y marcar todos como no inicializados
-    for (const auto& sensor : enabledNormalSensors) {
-        if (sensor.enable) {
-            if (sensor.type == SHT30 || sensor.type == SHT40 || sensor.type == CO2 || 
-                sensor.type == BME680 || sensor.type == BME280 || 
-                sensor.type == VEML7700) {
-                someI2cSensorEnabled = true;
-                // Asumir fallo inicial para todos los sensores habilitados
-                SensorManager::setSensorInitialized(sensor.sensorId, false);
-            } else {
-                // Asumir éxito para sensores no-I2C
-                SensorManager::setSensorInitialized(sensor.sensorId, true);
+    // Inicializar PowerManager para control de energía
+    PowerManager::begin();
+}
+
+// Inicializa un bus de comunicación específico si no lo ha hecho ya
+void HardwareManager::initializeBus(CommunicationProtocol protocol) {
+    switch (protocol) {
+        case CommunicationProtocol::I2C:
+            if (!i2cInitialized) {
+                Wire.begin(Pins::I2C_SDA, Pins::I2C_SCL);
+                i2cInitialized = true;
+                DEBUG_PRINTLN("I2C bus initialized");
             }
-        }
+            break;
+        case CommunicationProtocol::ONE_WIRE:
+            if (!oneWireInitialized) {
+                // La inicialización de OneWire se maneja a través del objeto DallasTemperature
+                // que ya es global. Solo marcarlo como inicializado.
+                oneWireInitialized = true;
+                DEBUG_PRINTLN("OneWire bus initialized");
+            }
+            break;
+        case CommunicationProtocol::MODBUS:
+            if (!modbusInitialized) {
+                ModbusSensorManager::beginModbus();
+                modbusInitialized = true;
+                DEBUG_PRINTLN("Modbus initialized");
+            }
+            break;
+        case CommunicationProtocol::ANALOG_ADC:
+            if (!analogInitialized) {
+                analogReadResolution(13);
+                analogSetAttenuation(ADC_11db);
+                analogInitialized = true;
+                DEBUG_PRINTLN("Analog ADC initialized");
+            }
+            break;
+        case CommunicationProtocol::SPI:
+            if (!spiInitialized) {
+                // SPI se inicializa en initHardware para LoRa
+                spiInitialized = true;
+                DEBUG_PRINTLN("SPI bus initialized");
+            }
+            break;
+        default:
+            break;
     }
+}
 
-    // Inicializar I2C solo si es necesario
-    if (someI2cSensorEnabled) {
-        Wire.begin(Pins::I2C_SDA, Pins::I2C_SCL);
-    }
-    
+// Método para inicializar hardware con SPI para LoRa
+bool HardwareManager::initHardware(SPIClass& spiLora,
+                                 const std::vector<SensorConfig>& enabledNormalSensors) {
+    // Inicializar componentes básicos
+    initialize();
+
     // Inicializar SPI para LORA con pines definidos
     spiLora.begin(Pins::LoRaSPI::SCK, Pins::LoRaSPI::MISO, Pins::LoRaSPI::MOSI);
-    
+
     // Inicializar los pines de selección SPI (SS)
     initializeSPISSPins();
-    
-    //Inicializar PowerManager para control de energía
-    PowerManager::begin();
-    
+
+    spiInitialized = true;
+
     return true;
 }
 

@@ -5,7 +5,7 @@
 #include "esp_sleep.h"
 #include "driver/rtc_io.h"
 
-void SleepManager::goToDeepSleep(uint32_t timeToSleep, 
+void SleepManager::goToDeepSleep(uint32_t timeToSleep,
                                SX1262* radio,
                                LoRaWANNode& node,
                                uint8_t* LWsession,
@@ -13,11 +13,11 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
     // Guardar sesión en RTC y otras rutinas de apagado
     uint8_t *persist = node.getBufferSession();
     memcpy(LWsession, persist, RADIOLIB_LORAWAN_SESSION_BUF_SIZE);
-    
+
     // Flush Serial antes de dormir
     DEBUG_FLUSH();
     DEBUG_END();
-    
+
     // Apagar módulos
     LoRaManager::prepareForSleep(radio);
     btStop();
@@ -25,7 +25,7 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
     // Deshabilitar I2C y SPI
     Wire.end();
     spiLora.end();
-    
+
     // Configurar pines para deep sleep (excepto CONFIG_PIN)
     configurePinsForDeepSleep();
 
@@ -115,7 +115,6 @@ void SleepManager::configurePinsForDeepSleep() {
     // FlowSensor
     pinMode(Pins::FLOW_SENSOR, ANALOG); //alta impedancia
 
-
     digitalWrite(Pins::LoRaSPI::NSS, HIGH);
     gpio_hold_en((gpio_num_t)Pins::LoRaSPI::NSS);
     digitalWrite(Pins::RtdSPI::PT100_CS, HIGH);
@@ -138,7 +137,7 @@ void SleepManager::releaseHeldPins() {
  */
 void SleepManager::handleWakeupCause(bool& wokeFromConfigPin) {
     esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
-    
+
     if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
         DEBUG_PRINTLN("INFO: Despertado por EXT0 (CONFIG_PIN)");
         wokeFromConfigPin = true;

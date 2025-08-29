@@ -7,9 +7,7 @@
 //          https://www.adafruit.com/product/2857
 //     URL: https://github.com/RobTillaart/SHT31
 
-
 #include "SHT31.h"
-
 
 //  SUPPORTED COMMANDS - single shot mode only
 #define SHT31_READ_STATUS       0xF32D
@@ -25,7 +23,6 @@
 #define SHT31_HEAT_OFF          0x3066
 #define SHT31_HEATER_TIMEOUT    180000UL   //  milliseconds
 
-
 SHT31::SHT31(uint8_t address, TwoWire *wire)
 {
   _wire           = wire;
@@ -40,7 +37,6 @@ SHT31::SHT31(uint8_t address, TwoWire *wire)
   _error          = SHT31_OK;
 }
 
-
 bool SHT31::begin()
 {
   if ((_address != 0x44) && (_address != 0x45))
@@ -50,7 +46,6 @@ bool SHT31::begin()
   return reset();
 }
 
-
 bool SHT31::isConnected()
 {
   _wire->beginTransmission(_address);
@@ -59,12 +54,10 @@ bool SHT31::isConnected()
   return (rv == 0);
 }
 
-
 uint8_t SHT31::getAddress()
 {
   return _address;
 }
-
 
 bool SHT31::read(bool fast)
 {
@@ -75,7 +68,6 @@ bool SHT31::read(bool fast)
   delay(fast ? 4 : 15);   //  table 4 datasheet
   return readData(fast);
 }
-
 
 #ifdef doc
 //  bit - description
@@ -107,7 +99,6 @@ bool SHT31::read(bool fast)
 //        '1': checksum of last write transfer failed
 #endif
 
-
 uint16_t SHT31::readStatus()
 {
   uint8_t status[3] = { 0, 0, 0 };
@@ -131,7 +122,6 @@ uint16_t SHT31::readStatus()
   return (uint16_t) (status[0] << 8) + status[1];
 }
 
-
 bool SHT31::reset(bool hard)
 {
   bool b = writeCmd(hard ? SHT31_HARD_RESET : SHT31_SOFT_RESET);
@@ -143,13 +133,11 @@ bool SHT31::reset(bool hard)
   return true;
 }
 
-
 void SHT31::setHeatTimeout(uint8_t seconds)
 {
   _heatTimeout = seconds;
   if (_heatTimeout > 180) _heatTimeout = 180;
 }
-
 
 bool SHT31::heatOn()
 {
@@ -169,7 +157,6 @@ bool SHT31::heatOn()
   return true;
 }
 
-
 bool SHT31::heatOff()
 {
   //  always switch off the heater - ignore _heaterOn flag.
@@ -182,7 +169,6 @@ bool SHT31::heatOff()
   _heaterOn   = false;
   return true;
 }
-
 
 bool SHT31::isHeaterOn()
 {
@@ -199,7 +185,6 @@ bool SHT31::isHeaterOn()
   return false;
 }
 
-
 bool SHT31::requestData()
 {
   if (writeCmd(SHT31_MEASUREMENT_SLOW) == false)
@@ -210,12 +195,10 @@ bool SHT31::requestData()
   return true;
 }
 
-
 bool SHT31::dataReady()
 {
   return ((millis() - _lastRequest) > 15);  //  TODO MAGIC NR
 }
-
 
 bool SHT31::readData(bool fast)
 {
@@ -247,14 +230,12 @@ bool SHT31::readData(bool fast)
   return true;
 }
 
-
 int SHT31::getError()
 {
   int rv = _error;
   _error = SHT31_OK;
   return rv;
 }
-
 
 //////////////////////////////////////////////////////////
 
@@ -276,7 +257,6 @@ uint8_t SHT31::crc8(const uint8_t *data, uint8_t len)
   return crc;
 }
 
-
 bool SHT31::writeCmd(uint16_t cmd)
 {
   _wire->beginTransmission(_address);
@@ -289,7 +269,6 @@ bool SHT31::writeCmd(uint16_t cmd)
   }
   return true;
 }
-
 
 bool SHT31::readBytes(uint8_t n, uint8_t *val)
 {
@@ -305,7 +284,6 @@ bool SHT31::readBytes(uint8_t n, uint8_t *val)
   _error = SHT31_ERR_READBYTES;
   return false;
 }
-
 
 //  -- END OF FILE --
 

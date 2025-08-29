@@ -3,14 +3,16 @@
 
 #include <Arduino.h>
 #include <vector>
+#include <memory>
+#include "sensors/ISensor.h"
 #include "sensor_types.h"
+#include "config_manager.h"
+#include "sensors/ModbusSensor.h"
+#include "ModbusSensorManager.h"
 #include <ESP32Time.h>
-#include "PowerManager.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include "SHT31.h"
-#include "ModbusSensorManager.h"
-#include "sensors/NtcManager.h"
 #include <SPI.h>
 #include <Adafruit_MAX31865.h>
 #include <Adafruit_VEML7700.h>
@@ -31,62 +33,44 @@ extern Adafruit_VEML7700 veml7700;
 
 /**
  * @brief Clase que maneja la inicialización y lecturas de todos los sensores
- *        incluyendo sensores normales y Modbus.
+ *        usando el patrón de interfaz ISensor para mayor escalabilidad.
  */
 class SensorManager {
   public:
     /**
-     * @brief Inicializa todos los sensores habilitados en el sistema.
-     * 
-     * Este método se encarga de:
-     * 1. Inicializar sensores I2C (SHT30, SHT40, CO2, BME680, BME280, VEML7700)
-     * 2. Inicializar sensores RTD si están habilitados
-     * 3. Inicializar sensores DS18B20 si están habilitados
-     * 4. Configurar pines analógicos para sensores específicos (NTC, pH, conductividad, etc.)
-     * 5. Configurar el ADC interno
-     * 
-     * @param enabledNormalSensors Vector con las configuraciones de sensores normales habilitados
-     * @param enabledAdcSensors Vector con las configuraciones de sensores ADC habilitados
+     * @brief Carga las configuraciones y crea las instancias de los sensores.
      */
-    static void beginSensors(const std::vector<SensorConfig>& enabledNormalSensors,
-                          const std::vector<SensorConfig>& enabledAdcSensors);
-
-    // Devuelve la lectura (o lecturas) de un sensor NO-Modbus según su configuración.
-    static SensorReading getSensorReading(const SensorConfig& cfg);
-    
-    // Devuelve la lectura de un sensor Modbus según su configuración
-    static ModbusSensorReading getModbusSensorReading(const ModbusSensorConfig& cfg);
-    
-    // Obtiene todas las lecturas de sensores (normales y Modbus) habilitados
-    static void getAllSensorReadings(std::vector<SensorReading>& normalReadings,
-                                    std::vector<ModbusSensorReading>& modbusReadings,
-                                    std::vector<SensorReading>& adcReadings,
-                                    const std::vector<SensorConfig>& enabledNormalSensors,
-                                    const std::vector<ModbusSensorConfig>& enabledModbusSensors,
-                                    const std::vector<SensorConfig>& enabledAdcSensors);
+    void registerSensorsFromConfig();
 
     /**
-     * @brief Verifica si un sensor específico fue inicializado correctamente
-     * 
-     * @param sensorId Identificador del sensor a verificar
-     * @return true si el sensor fue inicializado correctamente, false en caso contrario
+     * @brief Inicializa todos los sensores registrados.
      */
-    static bool isSensorInitialized(const std::string& sensorId);
+    void beginAll();
 
     /**
-     * @brief Registra el estado de inicialización de un sensor
-     * 
-     * @param sensorId Identificador del sensor
-     * @param initialized Estado de inicialización (true = inicializado correctamente)
+     * @brief Lee todos los sensores y devuelve las mediciones.
+     * @return Vector con todas las lecturas de sensores
      */
-    static void setSensorInitialized(const std::string& sensorId, bool initialized);
+    std::vector<SensorReading> readAll();
+
+
+    /**
+     * @brief Apaga las fuentes de alimentación controlables cuando ya no se necesitan
+     *        Útil para ahorrar energía después de leer los sensores
+     */
+    void powerDown();
 
   private:
-    // Métodos de lectura internos
-    static float readSensorValue(const SensorConfig &cfg, SensorReading &reading);
-    
-    // Mapa estático para almacenar el estado de inicialización de los sensores
-    static std::map<std::string, bool> sensorInitStatus;
+    /**
+     * @brief "Fábrica" para crear el objeto sensor correcto según su tipo.
+     * @param config Configuración del sensor
+     * @return Puntero único al sensor creado
+     */
+    std::unique_ptr<ISensor> createSensor(const SensorConfig& config);
+
+    // Vector de sensores gestionados
+    std::vector<std::unique_ptr<ISensor>> _sensors;
+
 };
 
 #endif // SENSOR_MANAGER_H

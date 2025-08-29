@@ -1,51 +1,56 @@
 #include "sensors/CO2Sensor.h"
 
-// Variable externa definida en main.cpp
-extern SCD4x scd4x;
-
-/**
- * @brief Inicializa el sensor SCD4x.
- */
-bool CO2Sensor::begin() {
-    return scd4x.begin(false, true, false);
+CO2Sensor::CO2Sensor(const std::string& id) {
+    this->_id = id;
+    this->_type = CO2;
 }
+    bool CO2Sensor::begin() {
+    _initialized = scd4x.begin(false, true, false);
+    return _initialized;
+}
+    SensorReading CO2Sensor::read() {
+    SensorReading reading;
+    strncpy(reading.sensorId, _id.c_str(), sizeof(reading.sensorId) - 1);
+    reading.sensorId[sizeof(reading.sensorId) - 1] = '\0';
+    reading.type = _type;
+    if (!_initialized) {
+        reading.value = NAN;
+            reading.subValues.push_back({NAN}); // CO2
+        reading.subValues.push_back({NAN}); // Temperatura
+        reading.subValues.push_back({NAN}); // Humedad
+        return reading;
+    }
 
-/**
- * @brief Lee CO2, temperatura y humedad del sensor SCD4x en modo single-shot.
- * 
- * @param outCO2 Variable donde se almacenará la concentración de CO2 en ppm.
- * @param outTemp Variable donde se almacenará la temperatura en °C.
- * @param outHum Variable donde se almacenará la humedad relativa en %.
- * @return true si la lectura fue exitosa, false en caso contrario.
- */
-bool CO2Sensor::read(float &outCO2, float &outTemp, float &outHum) {
-    // Iniciar valores en NAN en caso de error
-    outCO2 = NAN;
-    outTemp = NAN;
-    outHum = NAN;
-    
     // Iniciar una medición en modo single-shot
     if (!scd4x.measureSingleShot()) {
-        return false;
+        reading.value = NAN;
+            reading.subValues.push_back({NAN});
+        reading.subValues.push_back({NAN});
+        reading.subValues.push_back({NAN});
+        return reading;
     }
-    
-    // Esperar hasta que haya datos disponibles (con timeout)
     uint32_t counter = 0;
     const uint32_t maxAttempts = 200; // 200 intentos * 50ms = 10 segundos máximo
-    
+
     while (counter < maxAttempts) {
-        delay(50); // Esperar 50ms entre comprobaciones
-        counter++;
-        
-        if (scd4x.readMeasurement()) {
+    delay(50);
+    counter++;
+    if (scd4x.readMeasurement()) {
             // Leer los valores medidos
-            outCO2 = (float)scd4x.getCO2();
-            outTemp = scd4x.getTemperature();
-            outHum = scd4x.getHumidity();
-            return true;
+            float co2 = (float)scd4x.getCO2();
+    float temp = scd4x.getTemperature();
+    float hum = scd4x.getHumidity();
+    reading.value = co2;
+            reading.subValues.push_back({co2});
+                reading.subValues.push_back({temp});            reading.subValues.push_back({hum});
+                return reading;
         }
     }
-    
+
     // Si llegamos aquí, hubo timeout
-    return false;
-} 
+    reading.value = NAN;
+    reading.subValues.push_back({NAN});
+    reading.subValues.push_back({NAN});
+    reading.subValues.push_back({NAN});
+    return reading;
+}

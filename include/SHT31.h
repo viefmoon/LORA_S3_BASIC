@@ -8,10 +8,8 @@
 //          https://www.adafruit.com/product/2857
 //     URL: https://github.com/RobTillaart/SHT31
 
-
 #include "Arduino.h"
 #include "Wire.h"
-
 
 #define SHT31_LIB_VERSION             (F("0.5.0"))
 
@@ -39,7 +37,6 @@
 #define SHT31_ERR_CRC_STATUS          0x87
 #define SHT31_ERR_HEATER_COOLDOWN     0x88
 #define SHT31_ERR_HEATER_ON           0x89
-
 
 class SHT31
 {
@@ -79,7 +76,6 @@ public:
   uint16_t getRawHumidity()    { return _rawHumidity; };
   uint16_t getRawTemperature() { return _rawTemperature; };
 
-
   // ASYNC INTERFACE
   bool requestData();
   bool dataReady();
@@ -106,7 +102,5 @@ private:
   TwoWire* _wire;
 };
 
-
 //  -- END OF FILE --
-
 

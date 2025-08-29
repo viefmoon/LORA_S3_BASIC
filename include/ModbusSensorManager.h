@@ -25,13 +25,11 @@ public:
     static void endModbus();
 
     /**
-     * @brief Lee un sensor Modbus de tipo ENV_SENSOR.
-     *        Regresa la lectura con valores en el siguiente orden:
-     *        [0]=Humedad(%), [1]=Temperatura(°C), [2]=Presión(kPa), [3]=Iluminación(lux)
-     * @param cfg Configuración del sensor (dirección, etc.)
-     * @return Estructura ModbusSensorReading con los valores en el orden establecido.
+     * @brief Lee registros Modbus (expuesto para uso de ModbusSensor)
      */
-    static ModbusSensorReading readEnvSensor(const ModbusSensorConfig &cfg);
+    static bool readRegisters(uint8_t address, uint16_t startReg, uint16_t numRegs, uint16_t* outData) {
+        return readHoldingRegisters(address, startReg, numRegs, outData);
+    }
 
 private:
     /**

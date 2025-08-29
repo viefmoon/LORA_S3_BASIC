@@ -60,7 +60,7 @@ void ConfigManager::initializeDefaultConfig() {
         doc[JsonKeys::KEY_DEVICE_ID] = System::DEFAULT_DEVICE_ID;
         writeNamespace(JsonKeys::NS_SYSTEM, doc);
     }
-    
+
     /* -------------------------------------------------------------------------
        2. INICIALIZACIÓN DE SENSORES ANALÓGICOS
        ------------------------------------------------------------------------- */
@@ -75,7 +75,7 @@ void ConfigManager::initializeDefaultConfig() {
         doc[JsonKeys::KEY_NTC100K_R3] = Calibration::NTC100K::DEFAULT_R3;
         writeNamespace(JsonKeys::NS_NTC100K, doc);
     }
-    
+
     // NTC 10K: JsonKeys::NS_NTC10K
     {
         StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
@@ -87,7 +87,7 @@ void ConfigManager::initializeDefaultConfig() {
         doc[JsonKeys::KEY_NTC10K_R3] = Calibration::NTC10K::DEFAULT_R3;
         writeNamespace(JsonKeys::NS_NTC10K, doc);
     }
-    
+
     // Conductividad: JsonKeys::NS_COND
     {
         StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
@@ -101,7 +101,7 @@ void ConfigManager::initializeDefaultConfig() {
         doc[JsonKeys::KEY_CONDUCT_T3] = Calibration::Conductivity::DEFAULT_T3;
         writeNamespace(JsonKeys::NS_COND, doc);
     }
-    
+
     // pH: JsonKeys::NS_PH
     {
         StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
@@ -114,7 +114,7 @@ void ConfigManager::initializeDefaultConfig() {
         doc[JsonKeys::KEY_PH_CT] = Calibration::PH::DEFAULT_TEMP;
         writeNamespace(JsonKeys::NS_PH, doc);
     }
-    
+
     /* -------------------------------------------------------------------------
        3. INICIALIZACIÓN DE SENSORES NO-MODBUS
        ------------------------------------------------------------------------- */
@@ -131,13 +131,13 @@ void ConfigManager::initializeDefaultConfig() {
             sensorObj[JsonKeys::KEY_SENSOR_TYPE] = static_cast<int>(config.type);
             sensorObj[JsonKeys::KEY_SENSOR_ENABLE] = config.enable;
         }
-        
+
         String jsonString;
         serializeJson(doc, jsonString);
         prefs.putString(JsonKeys::NS_SENSORS, jsonString.c_str());
         prefs.end();
     }
-    
+
     /* -------------------------------------------------------------------------
        4. INICIALIZACIÓN DE CONFIGURACIÓN DE LORA
        ------------------------------------------------------------------------- */
@@ -157,7 +157,7 @@ void ConfigManager::initializeDefaultConfig() {
         Preferences prefs;
         prefs.begin(JsonKeys::NS_SENSORS_MODBUS, false);
         StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
-        JsonArray sensorArray = doc.to<JsonArray>(); 
+        JsonArray sensorArray = doc.to<JsonArray>();
 
         // Cargamos un default (definido en config.h)
         size_t count = sizeof(defaultModbusSensors)/sizeof(defaultModbusSensors[0]);
@@ -169,7 +169,7 @@ void ConfigManager::initializeDefaultConfig() {
             sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ADDR] = defaultModbusSensors[i].address;
             sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ENABLE]   = defaultModbusSensors[i].enable;
         }
-        
+
         String jsonString;
         serializeJson(doc, jsonString);
         prefs.putString(JsonKeys::NS_SENSORS_MODBUS, jsonString.c_str());
@@ -183,7 +183,7 @@ void ConfigManager::initializeDefaultConfig() {
         Preferences prefs;
         prefs.begin(JsonKeys::NS_SENSORS_ADC, false);
         StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
-        JsonArray sensorArray = doc.to<JsonArray>(); 
+        JsonArray sensorArray = doc.to<JsonArray>();
 
         // Cargamos sensores ADC por defecto
         size_t count = sizeof(defaultAdcSensors)/sizeof(defaultAdcSensors[0]);
@@ -195,7 +195,7 @@ void ConfigManager::initializeDefaultConfig() {
             sensorObj[JsonKeys::KEY_ADC_SENSOR_TYPE] = (int)defaultAdcSensors[i].type;
             sensorObj[JsonKeys::KEY_ADC_SENSOR_ENABLE] = defaultAdcSensors[i].enable;
         }
-        
+
         String jsonString;
         serializeJson(doc, jsonString);
         prefs.putString(JsonKeys::NS_SENSORS_ADC, jsonString.c_str());
@@ -229,12 +229,12 @@ std::vector<SensorConfig> ConfigManager::getAllSensorConfigs() {
     std::vector<SensorConfig> configs;
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     readNamespace(JsonKeys::NS_SENSORS, doc);
-    
+
     if (!doc.is<JsonArray>()) {
         // Si no es un arreglo, no hay nada que leer
         return configs;
     }
-    
+
     JsonArray sensorArray = doc.as<JsonArray>();
     for (JsonObject sensorObj : sensorArray) {
         SensorConfig config;
@@ -244,23 +244,23 @@ std::vector<SensorConfig> ConfigManager::getAllSensorConfigs() {
         strncpy(config.sensorId, sensorId, sizeof(config.sensorId));
         config.type = static_cast<SensorType>(sensorObj[JsonKeys::KEY_SENSOR_TYPE] | 0);
         config.enable = sensorObj[JsonKeys::KEY_SENSOR_ENABLE] | false;
-        
+
         configs.push_back(config);
     }
-    
+
     return configs;
 }
 
 std::vector<SensorConfig> ConfigManager::getEnabledSensorConfigs() {
     std::vector<SensorConfig> allSensors = getAllSensorConfigs();
-    
+
     std::vector<SensorConfig> enabledSensors;
     for (const auto& sensor : allSensors) {
         if (sensor.enable && strlen(sensor.sensorId) > 0) {
             enabledSensors.push_back(sensor);
         }
     }
-    
+
     return enabledSensors;
 }
 
@@ -269,7 +269,7 @@ void ConfigManager::setSensorsConfigs(const std::vector<SensorConfig>& configs) 
     prefs.begin(JsonKeys::NS_SENSORS, false);
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     JsonArray sensorArray = doc.to<JsonArray>();
-    
+
     for (const auto& sensor : configs) {
         JsonObject sensorObj = sensorArray.createNestedObject();
         sensorObj[JsonKeys::KEY_SENSOR] = sensor.configKey;
@@ -277,7 +277,7 @@ void ConfigManager::setSensorsConfigs(const std::vector<SensorConfig>& configs) 
         sensorObj[JsonKeys::KEY_SENSOR_TYPE] = static_cast<int>(sensor.type);
         sensorObj[JsonKeys::KEY_SENSOR_ENABLE] = sensor.enable;
     }
-    
+
     String jsonString;
     serializeJson(doc, jsonString);
     prefs.putString(JsonKeys::NS_SENSORS, jsonString.c_str());
@@ -290,29 +290,29 @@ void ConfigManager::setSensorsConfigs(const std::vector<SensorConfig>& configs) 
 LoRaConfig ConfigManager::getLoRaConfig() {
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     readNamespace(JsonKeys::NS_LORAWAN, doc);
-    
+
     LoRaConfig config;
     config.joinEUI  = doc[JsonKeys::KEY_LORA_JOIN_EUI] | LoRa::DEFAULT_JOIN_EUI;
     config.devEUI   = doc[JsonKeys::KEY_LORA_DEV_EUI]  | LoRa::DEFAULT_DEV_EUI;
     config.nwkKey   = doc[JsonKeys::KEY_LORA_NWK_KEY]  | LoRa::DEFAULT_NWK_KEY;
     config.appKey   = doc[JsonKeys::KEY_LORA_APP_KEY]  | LoRa::DEFAULT_APP_KEY;
-    
+
     return config;
 }
 
 void ConfigManager::setLoRaConfig(
-    const String &joinEUI, 
-    const String &devEUI, 
-    const String &nwkKey, 
+    const String &joinEUI,
+    const String &devEUI,
+    const String &nwkKey,
     const String &appKey) {
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     readNamespace(JsonKeys::NS_LORAWAN, doc);
-    
+
     doc[JsonKeys::KEY_LORA_JOIN_EUI] = joinEUI;
     doc[JsonKeys::KEY_LORA_DEV_EUI]  = devEUI;
     doc[JsonKeys::KEY_LORA_NWK_KEY]  = nwkKey;
     doc[JsonKeys::KEY_LORA_APP_KEY]  = appKey;
-    
+
     writeNamespace(JsonKeys::NS_LORAWAN, doc);
 }
 
@@ -324,7 +324,7 @@ void ConfigManager::setModbusSensorsConfigs(const std::vector<ModbusSensorConfig
     prefs.begin(JsonKeys::NS_SENSORS_MODBUS, false);
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     JsonArray sensorArray = doc.to<JsonArray>();
-    
+
     for (const auto& sensor : configs) {
         JsonObject sensorObj = sensorArray.createNestedObject();
         sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ID] = sensor.sensorId;
@@ -332,7 +332,7 @@ void ConfigManager::setModbusSensorsConfigs(const std::vector<ModbusSensorConfig
         sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ADDR] = sensor.address;
         sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ENABLE] = sensor.enable;
     }
-    
+
     String jsonString;
     serializeJson(doc, jsonString);
     prefs.putString(JsonKeys::NS_SENSORS_MODBUS, jsonString.c_str());
@@ -342,23 +342,23 @@ void ConfigManager::setModbusSensorsConfigs(const std::vector<ModbusSensorConfig
 std::vector<ModbusSensorConfig> ConfigManager::getAllModbusSensorConfigs() {
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     readNamespace(JsonKeys::NS_SENSORS_MODBUS, doc);
-    
+
     std::vector<ModbusSensorConfig> configs;
-    
+
     if (doc.is<JsonArray>()) {
         JsonArray array = doc.as<JsonArray>();
-        
+
         for (JsonObject sensorObj : array) {
             ModbusSensorConfig config;
             strlcpy(config.sensorId, sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ID] | "", sizeof(config.sensorId));
             config.type = static_cast<SensorType>(sensorObj[JsonKeys::KEY_MODBUS_SENSOR_TYPE] | 0);
             config.address = sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ADDR] | 1;
             config.enable = sensorObj[JsonKeys::KEY_MODBUS_SENSOR_ENABLE] | false;
-            
+
             configs.push_back(config);
         }
     }
-    
+
     return configs;
 }
 
@@ -422,7 +422,7 @@ void ConfigManager::setNTC10KConfig(double t1, double r1, double t2, double r2, 
     writeNamespace(JsonKeys::NS_NTC10K, doc);
 }
 
-void ConfigManager::getConductivityConfig(float& calTemp, float& coefComp, 
+void ConfigManager::getConductivityConfig(float& calTemp, float& coefComp,
                                            float& v1, float& t1, float& v2, float& t2, float& v3, float& t3) {
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     readNamespace(JsonKeys::NS_COND, doc);
@@ -484,7 +484,7 @@ void ConfigManager::setAdcSensorsConfigs(const std::vector<SensorConfig>& config
     prefs.begin(JsonKeys::NS_SENSORS_ADC, false);
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     JsonArray sensorArray = doc.to<JsonArray>();
-    
+
     for (const auto& sensor : configs) {
         JsonObject sensorObj = sensorArray.createNestedObject();
         sensorObj[JsonKeys::KEY_ADC_SENSOR] = sensor.configKey;
@@ -492,7 +492,7 @@ void ConfigManager::setAdcSensorsConfigs(const std::vector<SensorConfig>& config
         sensorObj[JsonKeys::KEY_ADC_SENSOR_TYPE] = static_cast<int>(sensor.type);
         sensorObj[JsonKeys::KEY_ADC_SENSOR_ENABLE] = sensor.enable;
     }
-    
+
     String jsonString;
     serializeJson(doc, jsonString);
     prefs.putString(JsonKeys::NS_SENSORS_ADC, jsonString.c_str());
@@ -502,12 +502,12 @@ void ConfigManager::setAdcSensorsConfigs(const std::vector<SensorConfig>& config
 std::vector<SensorConfig> ConfigManager::getAllAdcSensorConfigs() {
     StaticJsonDocument<System::JSON_DOC_SIZE_MEDIUM> doc;
     readNamespace(JsonKeys::NS_SENSORS_ADC, doc);
-    
+
     std::vector<SensorConfig> configs;
-    
+
     if (doc.is<JsonArray>()) {
         JsonArray array = doc.as<JsonArray>();
-        
+
         for (JsonObject sensorObj : array) {
             SensorConfig config;
             const char* cKey = sensorObj[JsonKeys::KEY_ADC_SENSOR] | "";
@@ -516,11 +516,11 @@ std::vector<SensorConfig> ConfigManager::getAllAdcSensorConfigs() {
             strncpy(config.sensorId, sensorId, sizeof(config.sensorId));
             config.type = static_cast<SensorType>(sensorObj[JsonKeys::KEY_ADC_SENSOR_TYPE] | 0);
             config.enable = sensorObj[JsonKeys::KEY_ADC_SENSOR_ENABLE] | false;
-            
+
             configs.push_back(config);
         }
     }
-    
+
     return configs;
 }
 

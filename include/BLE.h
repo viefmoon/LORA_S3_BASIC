@@ -20,7 +20,7 @@ public:
     static const unsigned long connectionTimeout = BLE::CONFIG_MAX_CONN_TIME_MS; // Usar constante de config.h
     static BLEServer* pBLEServer; // Referencia global al servidor BLE
     static bool shouldExitOnDisconnect; // Indica si debemos salir del modo configuración al desconectar
-    
+
     /**
      * @brief Verifica si se mantuvo presionado el botón de configuración y activa el modo BLE.
      * @return true si se activó el modo BLE, false en caso contrario
@@ -97,4 +97,4 @@ private:
     };
 };
 
-#endif // BLE_H 
+#endif // BLE_H

@@ -12,25 +12,32 @@
 #include <SPI.h>
 #include "config.h"
 #include "PowerManager.h"
-#include "SHT31.h"
+#include "sensors/ISensor.h"
 #include "sensor_types.h"
 #include <vector>
-#include <Adafruit_BME680.h>
-#include <Adafruit_BME280.h>
-#include <Adafruit_VEML7700.h>
-#include <SensirionI2cSht4x.h>
 #include <map>
 #include <string>
 
 class HardwareManager {
 public:
     /**
-     * @brief Inicializa el hardware básico del sistema (GPIO, I2C, SPI, etc.)
+     * @brief Inicializa el hardware básico del sistema (GPIO, LED, Power)
+     */
+    static void initialize();
+
+    /**
+     * @brief Inicializa un bus de comunicación específico si no lo ha hecho ya
+     * @param protocol El protocolo de comunicación a inicializar
+     */
+    static void initializeBus(CommunicationProtocol protocol);
+
+    /**
+     * @brief Inicializa el hardware básico del sistema (GPIO, I2C, SPI, etc.) - Compatibilidad
      * @param spiLora Referencia al bus SPI para el módulo LoRa
      * @param enabledNormalSensors Vector de sensores habilitados en la configuración
      * @return true si la inicialización fue exitosa, false en caso contrario
      */
-    static bool initHardware(SPIClass& spiLora, 
+    static bool initHardware(SPIClass& spiLora,
                            const std::vector<SensorConfig>& enabledNormalSensors);
 
     /**
@@ -38,6 +45,12 @@ public:
      */
     static void initializeSPISSPins();
 
+private:
+    static bool i2cInitialized;
+    static bool oneWireInitialized;
+    static bool modbusInitialized;
+    static bool analogInitialized;
+    static bool spiInitialized;
 };
 
 #endif // HARDWARE_MANAGER_H

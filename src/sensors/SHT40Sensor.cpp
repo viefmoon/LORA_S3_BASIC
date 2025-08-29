@@ -1,56 +1,57 @@
 #include "sensors/SHT40Sensor.h"
 
-/**
- * @brief Inicializa el sensor SHT40
- * 
- * @return true si se inicializó correctamente, false en caso contrario
- */
-bool SHT40Sensor::begin() {
+SHT40Sensor::SHT40Sensor(const std::string& id) {
+    this->_id = id;
+    this->_type = SHT40;
+}
+    bool SHT40Sensor::begin() {
     // Inicializar el objeto SHT40 con el bus I2C y la dirección
     sht40Sensor.begin(Wire, SHT40_I2C_ADDR_44);
-    
+
     // Hacer un reset para asegurar que el sensor está en un estado limpio
     int16_t error = sht40Sensor.softReset();
     if (error != 0) {
+    _initialized = false;
         return false;
     }
-    
+
     // Realizar una lectura de prueba
     float temp, hum;
     error = sht40Sensor.measureHighPrecision(temp, hum);
     if (error != 0) {
+    _initialized = false;
         return false;
     }
-    
+    _initialized = true;
     return true;
 }
-
-/**
- * @brief Lee temperatura y humedad del sensor SHT40
- * 
- * @param outTemp Variable donde se almacenará la temperatura en °C
- * @param outHum Variable donde se almacenará la humedad relativa en %
- * @return true si la lectura fue exitosa, false en caso contrario
- */
-bool SHT40Sensor::read(float &outTemp, float &outHum) {
-    // Intentar hasta 3 veces obtener una lectura válida
-    for (int i = 0; i < 3; i++) {
-        int16_t error = sht40Sensor.measureHighPrecision(outTemp, outHum);
-        
-        if (error == 0) {
-            // Verificar que los valores sean válidos (no cero y dentro de rangos razonables)
-            if (!isnan(outTemp) && !isnan(outHum) && 
-                outTemp > -40.0f && outTemp < 125.0f && 
-                outHum >= 0.0f && outHum <= 100.0f) {
-                return true; // Retornar inmediatamente con la primera lectura válida
+    SensorReading SHT40Sensor::read() {
+    SensorReading reading;
+    strncpy(reading.sensorId, _id.c_str(), sizeof(reading.sensorId) - 1);
+    reading.sensorId[sizeof(reading.sensorId) - 1] = '\0';
+    reading.type = _type;
+    if (!_initialized) {
+        reading.value = NAN;
+            reading.subValues.push_back({NAN}); // Temperatura
+        reading.subValues.push_back({NAN}); // Humedad
+        return reading;
+    }
+    float temp, hum;
+    for (int i = 0;
+    i < 3; i++) {
+    int16_t error = sht40Sensor.measureHighPrecision(temp, hum);
+    if (error == 0) {
+    if (!isnan(temp) && !isnan(hum) &&
+                temp > -40.0f && temp < 125.0f &&
+                hum >= 0.0f && hum <= 100.0f) {
+                reading.value = temp;
+            reading.subValues.push_back({temp});
+                reading.subValues.push_back({hum});
+                return reading;
             }
         }
-        
-        delay(5); // Pequeña pausa entre intentos
-    }
-    
-    // Si no se encontró ninguna lectura válida
-    outTemp = NAN;
-    outHum = NAN;
-    return false;
-} 
+        delay(5);    }    reading.value = NAN;
+    reading.subValues.push_back({NAN});
+    reading.subValues.push_back({NAN});
+    return reading;
+}

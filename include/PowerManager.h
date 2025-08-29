@@ -19,26 +19,26 @@ public:
      * @brief Activa la línea de alimentación de 3.3V
      */
     static void power3V3On();
-    
+
     /**
      * @brief Desactiva la línea de alimentación de 3.3V
      */
     static void power3V3Off();
-    
+
     /**
      * @brief Activa la línea de alimentación de 12V
      */
     static void power12VOn();
-    
+
     /**
      * @brief Desactiva la línea de alimentación de 12V
      */
     static void power12VOff();
-    
+
     /**
      * @brief Desactiva todas las líneas de alimentación
      */
     static void allPowerOff();
 };
 
-#endif 
+#endif

@@ -59,28 +59,6 @@ public:
         size_t bufferSize
     );
 
-    /**
-     * @brief Crea un payload optimizado con formato delimitado para sensores normales y Modbus.
-     * @param normalReadings Vector con lecturas de sensores normales.
-     * @param modbusReadings Vector con lecturas de sensores Modbus.
-     * @param deviceId ID del dispositivo.
-     * @param stationId ID de la estación.
-     * @param battery Valor de la batería.
-     * @param timestamp Timestamp del sistema.
-     * @param buffer Buffer donde se almacenará el payload.
-     * @param bufferSize Tamaño del buffer.
-     * @return Tamaño del payload generado.
-     */
-    static size_t createDelimitedPayload(
-        const std::vector<SensorReading>& normalReadings,
-        const std::vector<ModbusSensorReading>& modbusReadings,
-        const String& deviceId,
-        const String& stationId,
-        float battery,
-        uint32_t timestamp,
-        char* buffer,
-        size_t bufferSize
-    );
 
     /**
      * @brief Envía el payload de sensores estándar usando formato delimitado.
@@ -90,47 +68,12 @@ public:
      * @param stationId ID de la estación
      * @param rtc Referencia al RTC para obtener timestamp
      */
-    static void sendDelimitedPayload(const std::vector<SensorReading>& readings, 
+    static void sendDelimitedPayload(const std::vector<SensorReading>& readings,
                                    LoRaWANNode& node,
-                                   const String& deviceId, 
-                                   const String& stationId, 
+                                   const String& deviceId,
+                                   const String& stationId,
                                    ESP32Time& rtc);
 
-    /**
-     * @brief Envía el payload de sensores estándar y Modbus usando formato delimitado.
-     * @param normalReadings Vector con lecturas de sensores estándar
-     * @param modbusReadings Vector con lecturas de sensores Modbus
-     * @param node Referencia al nodo LoRaWAN
-     * @param deviceId ID del dispositivo
-     * @param stationId ID de la estación
-     * @param rtc Referencia al RTC para obtener timestamp
-     */
-    static void sendDelimitedPayload(
-        const std::vector<SensorReading>& normalReadings, 
-        const std::vector<ModbusSensorReading>& modbusReadings,
-        LoRaWANNode& node,
-        const String& deviceId, 
-        const String& stationId, 
-        ESP32Time& rtc);
-
-    /**
-     * @brief Envía el payload de sensores estándar, Modbus y ADC usando formato delimitado.
-     * @param normalReadings Vector con lecturas de sensores estándar
-     * @param modbusReadings Vector con lecturas de sensores Modbus
-     * @param adcReadings Vector con lecturas de sensores ADC
-     * @param node Referencia al nodo LoRaWAN
-     * @param deviceId ID del dispositivo
-     * @param stationId ID de la estación
-     * @param rtc Referencia al RTC para obtener timestamp
-     */
-    static void sendDelimitedPayload(
-        const std::vector<SensorReading>& normalReadings, 
-        const std::vector<ModbusSensorReading>& modbusReadings,
-        const std::vector<SensorReading>& adcReadings,
-        LoRaWANNode& node,
-        const String& deviceId, 
-        const String& stationId, 
-        ESP32Time& rtc);
 
     /**
      * @brief Prepara el módulo LoRa para entrar en modo sleep

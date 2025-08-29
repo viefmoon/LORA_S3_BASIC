@@ -1,47 +1,45 @@
 #include "sensors/BatterySensor.h"
-// No necesita incluir config/pins_config.h ya que se incluye en el .h
 #include "config.h" // Para las constantes de configuración
 
-/**
- * @brief Lee el voltaje de la batería
- * 
- * @return float Voltaje de la batería en voltios, o NAN si hay error
- */
-float BatterySensor::readVoltage() {
-    // Activar el pin de control para habilitar la medición
+BatterySensor::BatterySensor(const std::string& id) {
+    this->_id = id;
+    this->_type = BATTERY;
+}
+    bool BatterySensor::begin() {
     pinMode(Pins::BATTERY_CONTROL, OUTPUT);
-    digitalWrite(Pins::BATTERY_CONTROL, LOW);
-    
-    // Esperar un breve momento para estabilizar la lectura
-    delay(10);
-    
-    // Leer el valor del pin analógico para la batería en milivoltios directamente
-    int milliVolts = analogReadMilliVolts(Pins::BATTERY_SENSOR);
-
-    // Desactivar el pin de control para ahorrar energía
     digitalWrite(Pins::BATTERY_CONTROL, HIGH);
-    
-    // Convertir de milivoltios a voltios
-    float voltage = milliVolts / 1000.0f;
-    
-    // Comprobar si el voltaje es válido
-    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
-        return NAN;
+    _initialized = true;
+    return true;
+}
+    SensorReading BatterySensor::read() {
+    SensorReading reading;
+    strncpy(reading.sensorId, _id.c_str(), sizeof(reading.sensorId) - 1);
+    reading.sensorId[sizeof(reading.sensorId) - 1] = '\0';
+    reading.type = _type;
+    if (!_initialized) {
+        reading.value = NAN;
+        return reading;
     }
-
-    // Calcular el voltaje real de la batería
-    float batteryVoltage = calculateBatteryVoltage(voltage);
-    return batteryVoltage;
+    digitalWrite(Pins::BATTERY_CONTROL, LOW);
+    delay(10);
+    int milliVolts = analogReadMilliVolts(Pins::BATTERY_SENSOR);
+    digitalWrite(Pins::BATTERY_CONTROL, HIGH);
+    float voltage = milliVolts / 1000.0f;
+    if (isnan(voltage) || voltage <= 0.0f || voltage >= 3.3f) {
+        reading.value = NAN;
+        return reading;
+    }    reading.value = calculateBatteryVoltage(voltage);
+    return reading;
 }
 
 /**
  * @brief Calcula el voltaje real de la batería a partir de la lectura del ADC
- * 
+ *
  * El circuito es un divisor de voltaje con:
  * R1 = 100k (a GND)
  * R2 = 390k (a batería)
  * VBAT = VADC_IN1 * (R1 + R2) / R1 = VADC_IN1 * (100k + 390k) / 100k
- * 
+ *
  * @param adcVoltage Voltaje medido por el ADC
  * @return float Voltaje real de la batería
  */
@@ -49,4 +47,5 @@ float BatterySensor::calculateBatteryVoltage(float adcVoltage) {
     // VBAT = 100k / (100k+390k) * VADC_IN1 corregido a:
     // VBAT = VADC_IN1 / (100k / (100k+390k))
     return adcVoltage / (Calibration::BATTERY_R1 / (Calibration::BATTERY_R1 + Calibration::BATTERY_R2));
-} 
+}
+

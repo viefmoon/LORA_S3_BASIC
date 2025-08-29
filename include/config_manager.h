@@ -25,7 +25,7 @@ public:
     // Verificación e inicialización
     static bool checkInitialized();
     static void initializeDefaultConfig();
-    
+
     // Configuración del sistema
     static void getSystemConfig(bool &initialized, uint32_t &sleepTime, String &deviceId, String &stationId);
     static void setSystemConfig(bool initialized, uint32_t sleepTime, const String &deviceId, const String &stationId);
@@ -44,41 +44,41 @@ public:
     static void setModbusSensorsConfigs(const std::vector<ModbusSensorConfig>& configs);
     static std::vector<ModbusSensorConfig> getAllModbusSensorConfigs();
     static std::vector<ModbusSensorConfig> getEnabledModbusSensorConfigs();
-    
+
     /* =========================================================================
        CONFIGURACIÓN DE SENSORES ADC
        ========================================================================= */
     static void setAdcSensorsConfigs(const std::vector<SensorConfig>& configs);
     static std::vector<SensorConfig> getAllAdcSensorConfigs();
     static std::vector<SensorConfig> getEnabledAdcSensorConfigs();
-    
+
     /* =========================================================================
        CONFIGURACIÓN DE LORA
        ========================================================================= */
     static LoRaConfig getLoRaConfig();
     static void setLoRaConfig(
-        const String &joinEUI, 
-        const String &devEUI, 
-        const String &nwkKey, 
+        const String &joinEUI,
+        const String &devEUI,
+        const String &nwkKey,
         const String &appKey);
-    
+
     /* =========================================================================
        CONFIGURACIÓN DE SENSORES ANALÓGICOS
        ========================================================================= */
     // NTC 100K
     static void getNTC100KConfig(double& t1, double& r1, double& t2, double& r2, double& t3, double& r3);
     static void setNTC100KConfig(double t1, double r1, double t2, double r2, double t3, double r3);
-    
+
     // NTC 10K
     static void getNTC10KConfig(double& t1, double& r1, double& t2, double& r2, double& t3, double& r3);
     static void setNTC10KConfig(double t1, double r1, double t2, double r2, double t3, double r3);
-    
+
     // Conductividad
-    static void getConductivityConfig(float& calTemp, float& coefComp, 
+    static void getConductivityConfig(float& calTemp, float& coefComp,
                                     float& v1, float& t1, float& v2, float& t2, float& v3, float& t3);
     static void setConductivityConfig(float calTemp, float coefComp,
                                     float v1, float t1, float v2, float t2, float v3, float t3);
-    
+
     // pH
     static void getPHConfig(float& v1, float& t1, float& v2, float& t2, float& v3, float& t3, float& defaultTemp);
     static void setPHConfig(float v1, float t1, float v2, float t2, float v3, float t3, float defaultTemp);

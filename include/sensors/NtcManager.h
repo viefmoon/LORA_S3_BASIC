@@ -11,7 +11,7 @@ public:
      * @return Temperatura en grados Celsius, o NAN si hay error
      */
     static double readNtc100kTemperature(const char* configKey);
-    
+
     /**
      * Lee la temperatura del sensor NTC10K
      * @return Temperatura en grados Celsius, o NAN si hay error
@@ -27,7 +27,7 @@ private:
                                           double T2, double R2,
                                           double T3, double R3,
                                           double &A, double &B, double &C);
-    
+
     /**
      * Calcula la temperatura usando la ecuación de Steinhart-Hart
      * @param resistance La resistencia del termistor en ohms
@@ -35,7 +35,7 @@ private:
      * @return Temperatura en grados Celsius
      */
     static double steinhartHartTemperature(double resistance, double A, double B, double C);
-    
+
     /**
      * Calcula la resistencia del NTC basado en un divisor de voltaje
      * @param voltage Voltaje medido en el punto medio del divisor
@@ -47,4 +47,4 @@ private:
     static double computeNtcResistanceFromVoltageDivider(double voltage, double vRef, double rFixed, bool ntcTop);
 };
 
-#endif // NTC_MANAGER_H 
+#endif // NTC_MANAGER_H

@@ -1,16 +1,16 @@
-#ifndef VEML7700_SENSOR_H
-#define VEML7700_SENSOR_H
+#ifndef BME680_SENSOR_H
+#define BME680_SENSOR_H
 
 #include <Arduino.h>
 #include "sensors/ISensor.h"
-#include <Adafruit_VEML7700.h>
+#include <Adafruit_BME680.h>
 
 // Variable externa del sensor
-extern Adafruit_VEML7700 veml7700;
+extern Adafruit_BME680 bme680Sensor;
 
-class VEML7700Sensor : public ISensor {
+class BME680Sensor : public ISensor {
 public:
-    explicit VEML7700Sensor(const std::string& id);
+    explicit BME680Sensor(const std::string& id);
 
     bool begin() override;
     SensorReading read() override;
@@ -20,4 +20,4 @@ public:
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 };
 
-#endif // VEML7700_SENSOR_H
+#endif // BME680_SENSOR_H
