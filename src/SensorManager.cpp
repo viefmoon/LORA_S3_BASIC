@@ -4,8 +4,7 @@
 #include <cmath>  // Para fabs() y otras funciones matemáticas
 #include <DallasTemperature.h>
 #include "sensor_types.h"
-#include "config/pins_config.h"
-#include "config/sensor_defaults.h"
+#include "config.h"
 #include <Preferences.h>
 #include "config_manager.h"
 #include "debug.h"
@@ -86,7 +85,7 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
                 }
                 break;
             case BME280:
-                success = bme280Sensor.begin(BME280_I2C_ADDR, &Wire);
+                success = bme280Sensor.begin(Sensors::BME280_I2C_ADDR, &Wire);
                 if (success) {
                     bme280Sensor.setSampling(Adafruit_BME280::MODE_FORCED,
                                           Adafruit_BME280::SAMPLING_X1, // temperature
@@ -156,21 +155,21 @@ void SensorManager::beginSensors(const std::vector<SensorConfig>& enabledNormalS
 
     // Configurar los pines analógicos para cada sensor
     // NTC100K 0 - Pin A0
-    pinMode(NTC100K_0_PIN, INPUT);
+    pinMode(Pins::NTC100K_0, INPUT);
     // NTC100K 1 - Pin A3
-    pinMode(NTC100K_1_PIN, INPUT);
+    pinMode(Pins::NTC100K_1, INPUT);
     // NTC10K - Pin A4
-    pinMode(NTC10K_PIN, INPUT);
+    pinMode(Pins::NTC10K, INPUT);
     // PH Sensor - Pin A5
-    pinMode(PH_SENSOR_PIN, INPUT);
+    pinMode(Pins::PH_SENSOR, INPUT);
     // Conductivity Sensor - Pin A6
-    pinMode(COND_SENSOR_PIN, INPUT);
+    pinMode(Pins::COND_SENSOR, INPUT);
     // HDS10 Sensor - Pin A7
-    pinMode(HDS10_SENSOR_PIN, INPUT);
+    pinMode(Pins::HDS10_SENSOR, INPUT);
     // Battery Sensor - Pin A8
-    pinMode(BATTERY_SENSOR_PIN, INPUT);
+    pinMode(Pins::BATTERY_SENSOR, INPUT);
     // Soil Humidity Sensor
-    pinMode(SOILH_SENSOR_PIN, INPUT);
+    pinMode(Pins::SOILH_SENSOR, INPUT);
 
     // Inicializar sensores ADC habilitados
     for (const auto& sensor : enabledAdcSensors) {
@@ -264,7 +263,7 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
         case SOILH:
             {
                 // Leer el valor del pin analógico
-                int adcValue = analogRead(SOILH_SENSOR_PIN);
+                int adcValue = analogRead(Pins::SOILH_SENSOR);
                 
                 // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
                 float voltage = adcValue * (3.3f / 4095.0f);
@@ -283,7 +282,7 @@ float SensorManager::readSensorValue(const SensorConfig &cfg, SensorReading &rea
         case RTD:
             {
                 uint16_t rtdValue = rtdSensor.readRTD();
-                float temp = rtdSensor.temperature(RNOMINAL, RREF);
+                float temp = rtdSensor.temperature(Sensors::RNOMINAL, Sensors::RREF);
                 
                 // Verificar si hay errores
                 uint8_t fault = rtdSensor.readFault();

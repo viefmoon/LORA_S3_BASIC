@@ -4,9 +4,7 @@
  *******************************************************************************************/
 
 #include "BLE.h"
-#include "config/pins_config.h" // Para CONFIG_PIN y CONFIG_LED_PIN
-#include "config/ble_config.h"  // Para BLE_DEVICE_PREFIX y CONFIG_TRIGGER_TIME
-#include "config/json_keys.h"   // Para JSON_DOC_SIZE_LARGE y constantes de claves JSON
+#include "config.h"   // Para todas las constantes de configuración
 #include "debug.h"  // Para los mensajes DEBUG_*
 
 // Inicialización de variables estáticas
@@ -35,7 +33,7 @@ void BLEHandler::ServerCallbacks::onDisconnect(BLEServer* pServer) {
 // Implementación de los métodos de BLEHandler
 bool BLEHandler::checkConfigMode() {
     bool enterConfig = false;
-    int initialPinState = digitalRead(CONFIG_PIN);
+    int initialPinState = digitalRead(Pins::CONFIG_PIN);
 
     // Entrar en modo config si:
     // 1. Despertamos por el pin Y el pin SIGUE bajo ahora
@@ -47,9 +45,9 @@ bool BLEHandler::checkConfigMode() {
         delay(50);
 
         // Verificar si sigue presionado después del debounce
-        if (digitalRead(CONFIG_PIN) == LOW) {
-            while (digitalRead(CONFIG_PIN) == LOW) {
-                if (millis() - startTime >= CONFIG_TRIGGER_TIME) {
+        if (digitalRead(Pins::CONFIG_PIN) == LOW) {
+            while (digitalRead(Pins::CONFIG_PIN) == LOW) {
+                if (millis() - startTime >= BLE::CONFIG_TRIGGER_TIME_MS) {
                     DEBUG_PRINTLN("INFO: Entrando en modo configuración BLE");
                     enterConfig = true;
                     break; // Salir del while
@@ -67,7 +65,7 @@ bool BLEHandler::checkConfigMode() {
 
         // Obtener configuración LoRa para el nombre BLE
         LoRaConfig loraConfig = ConfigManager::getLoRaConfig();
-        String bleName = BLE_DEVICE_PREFIX + String(loraConfig.devEUI);
+        String bleName = BLE::DEVICE_PREFIX + String(loraConfig.devEUI);
 
         // Inicializar BLE
         BLEDevice::init(bleName.c_str());
@@ -99,7 +97,7 @@ bool BLEHandler::checkConfigMode() {
 }
 
 BLEServer* BLEHandler::initBLE(const String& devEUI) {
-    String bleName = BLE_DEVICE_PREFIX + devEUI;
+    String bleName = BLE::DEVICE_PREFIX + devEUI;
     BLEDevice::init(bleName.c_str());
     BLEServer* pServer = BLEDevice::createServer();
     pServer->setCallbacks(new ServerCallbacks());
@@ -108,7 +106,7 @@ BLEServer* BLEHandler::initBLE(const String& devEUI) {
 
 void BLEHandler::runConfigLoop() {
     unsigned long startTime = millis();
-    const unsigned long timeout = CONFIG_BLE_WAIT_TIMEOUT; // Usar constante de config.h
+    const unsigned long timeout = BLE::CONFIG_WAIT_TIMEOUT_MS; // Usar constante de config.h
 
     while (true) {
         // Verificar si debemos salir por desconexión de cliente
@@ -136,13 +134,13 @@ void BLEHandler::runConfigLoop() {
         // Control del LED según estado de conexión
         if (BLEHandler::isConnected) {
             // Cliente conectado, LED fijo
-            digitalWrite(CONFIG_LED_PIN, HIGH);
+            digitalWrite(Pins::CONFIG_LED, HIGH);
             delay(1000);
         } else {
             // Esperando conexión, LED parpadeando
-            digitalWrite(CONFIG_LED_PIN, HIGH);
+            digitalWrite(Pins::CONFIG_LED, HIGH);
             delay(250);
-            digitalWrite(CONFIG_LED_PIN, LOW);
+            digitalWrite(Pins::CONFIG_LED, LOW);
             delay(250);
         }
     }
@@ -151,11 +149,11 @@ void BLEHandler::runConfigLoop() {
 // Implementación de la configuración del servicio BLE
 BLEService* BLEHandler::setupService(BLEServer* pServer) {
     // Crear el servicio de configuración utilizando el UUID definido
-    BLEService* pService = pServer->createService(BLEUUID(BLE_SERVICE_UUID));
+    BLEService* pService = pServer->createService(BLEUUID(BLE::SERVICE_UUID));
 
     // Característica del sistema - común para todos los tipos de dispositivo
     BLECharacteristic* pSystemChar = pService->createCharacteristic(
-        BLEUUID(BLE_CHAR_SYSTEM_UUID),
+        BLEUUID(BLE::CHAR_SYSTEM_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pSystemChar->setCallbacks(new SystemConfigCallback());
@@ -164,42 +162,42 @@ BLEService* BLEHandler::setupService(BLEServer* pServer) {
     
     // Característica para configuración NTC 100K
     BLECharacteristic* pNTC100KChar = pService->createCharacteristic(
-        BLEUUID(BLE_CHAR_NTC100K_UUID),
+        BLEUUID(BLE::CHAR_NTC100K_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pNTC100KChar->setCallbacks(new NTC100KConfigCallback());
     
     // Característica para configuración NTC 10K
     BLECharacteristic* pNTC10KChar = pService->createCharacteristic(
-        BLEUUID(BLE_CHAR_NTC10K_UUID),
+        BLEUUID(BLE::CHAR_NTC10K_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pNTC10KChar->setCallbacks(new NTC10KConfigCallback());
     
     // Característica para configuración de Conductividad
     BLECharacteristic* pCondChar = pService->createCharacteristic(
-        BLEUUID(BLE_CHAR_CONDUCTIVITY_UUID),
+        BLEUUID(BLE::CHAR_CONDUCTIVITY_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pCondChar->setCallbacks(new ConductivityConfigCallback());
     
     // Característica para configuración de pH
     BLECharacteristic* pPHChar = pService->createCharacteristic(
-        BLEUUID(BLE_CHAR_PH_UUID),
+        BLEUUID(BLE::CHAR_PH_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pPHChar->setCallbacks(new PHConfigCallback());
 
     // Característica para configuración de Sensores
     BLECharacteristic* pSensorsChar = pService->createCharacteristic(
-        BLEUUID(BLE_CHAR_SENSORS_UUID),
+        BLEUUID(BLE::CHAR_SENSORS_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pSensorsChar->setCallbacks(new SensorsConfigCallback());
     
     // Característica para configuración de LoRa - común para todos los tipos
     BLECharacteristic* pLoRaConfigChar = pService->createCharacteristic(
-        BLEUUID(BLE_CHAR_LORA_CONFIG_UUID),
+        BLEUUID(BLE::CHAR_LORA_CONFIG_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pLoRaConfigChar->setCallbacks(new LoRaConfigCallback());
@@ -214,18 +212,18 @@ void BLEHandler::SystemConfigCallback::onWrite(BLECharacteristic *pCharacteristi
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
     
     // Se espera un JSON de la forma: { "system": { "initialized": <bool>, "sleep_time": <valor>, "device_id": "<valor>" } }
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> doc;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> doc;
     DeserializationError error = deserializeJson(doc, pCharacteristic->getValue());
     if (error) {
         DEBUG_PRINT(F("Error deserializando System config: "));
         DEBUG_PRINTLN(error.c_str());
         return;
     }
-    JsonObject obj = doc[NAMESPACE_SYSTEM];
-    bool initialized = obj[KEY_INITIALIZED] | false;
-    uint32_t sleepTime = obj[KEY_SLEEP_TIME] | DEFAULT_TIME_TO_SLEEP;
-    String deviceId = obj[KEY_DEVICE_ID] | "";
-    String stationId = obj[KEY_STATION_ID] | "";
+    JsonObject obj = doc[JsonKeys::NS_SYSTEM];
+    bool initialized = obj[JsonKeys::KEY_INITIALIZED] | false;
+    uint32_t sleepTime = obj[JsonKeys::KEY_SLEEP_TIME] | System::DEFAULT_TIME_TO_SLEEP;
+    String deviceId = obj[JsonKeys::KEY_DEVICE_ID] | "";
+    String stationId = obj[JsonKeys::KEY_STATION_ID] | "";
     
     DEBUG_PRINT(F("DEBUG: Configuración de sistema parseada: initialized="));
     DEBUG_PRINT(initialized);
@@ -246,12 +244,12 @@ void BLEHandler::SystemConfigCallback::onRead(BLECharacteristic *pCharacteristic
     String stationId;
     ConfigManager::getSystemConfig(initialized, sleepTime, deviceId, stationId);
     
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> doc;
-    JsonObject obj = doc.createNestedObject(NAMESPACE_SYSTEM);
-    obj[KEY_INITIALIZED] = initialized;
-    obj[KEY_SLEEP_TIME] = sleepTime;
-    obj[KEY_DEVICE_ID] = deviceId;
-    obj[KEY_STATION_ID] = stationId;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> doc;
+    JsonObject obj = doc.createNestedObject(JsonKeys::NS_SYSTEM);
+    obj[JsonKeys::KEY_INITIALIZED] = initialized;
+    obj[JsonKeys::KEY_SLEEP_TIME] = sleepTime;
+    obj[JsonKeys::KEY_DEVICE_ID] = deviceId;
+    obj[JsonKeys::KEY_STATION_ID] = stationId;
 
     String jsonString;
     serializeJson(doc, jsonString);
@@ -266,34 +264,34 @@ void BLEHandler::NTC100KConfigCallback::onWrite(BLECharacteristic *pCharacterist
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
 
     // Se espera un JSON de la forma: { "ntc_100k": { <parámetros> } }
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
         DEBUG_PRINT(F("Error deserializando NTC100K config: "));
         DEBUG_PRINTLN(error.c_str());
         return;
     }
-    JsonObject doc = fullDoc[NAMESPACE_NTC100K];
+    JsonObject doc = fullDoc[JsonKeys::NS_NTC100K];
     DEBUG_PRINT(F("DEBUG: NTC100K valores parseados - T1: "));
-    DEBUG_PRINT(doc[KEY_NTC100K_T1] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC100K_T1] | 0.0);
     DEBUG_PRINT(F(", R1: "));
-    DEBUG_PRINT(doc[KEY_NTC100K_R1] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC100K_R1] | 0.0);
     DEBUG_PRINT(F(", T2: "));
-    DEBUG_PRINT(doc[KEY_NTC100K_T2] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC100K_T2] | 0.0);
     DEBUG_PRINT(F(", R2: "));
-    DEBUG_PRINT(doc[KEY_NTC100K_R2] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC100K_R2] | 0.0);
     DEBUG_PRINT(F(", T3: "));
-    DEBUG_PRINT(doc[KEY_NTC100K_T3] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC100K_T3] | 0.0);
     DEBUG_PRINT(F(", R3: "));
-    DEBUG_PRINTLN(doc[KEY_NTC100K_R3] | 0.0);
+    DEBUG_PRINTLN(doc[JsonKeys::KEY_NTC100K_R3] | 0.0);
     
     ConfigManager::setNTC100KConfig(
-        doc[KEY_NTC100K_T1] | 0.0,
-        doc[KEY_NTC100K_R1] | 0.0,
-        doc[KEY_NTC100K_T2] | 0.0,
-        doc[KEY_NTC100K_R2] | 0.0,
-        doc[KEY_NTC100K_T3] | 0.0,
-        doc[KEY_NTC100K_R3] | 0.0
+        doc[JsonKeys::KEY_NTC100K_T1] | 0.0,
+        doc[JsonKeys::KEY_NTC100K_R1] | 0.0,
+        doc[JsonKeys::KEY_NTC100K_T2] | 0.0,
+        doc[JsonKeys::KEY_NTC100K_R2] | 0.0,
+        doc[JsonKeys::KEY_NTC100K_T3] | 0.0,
+        doc[JsonKeys::KEY_NTC100K_R3] | 0.0
     );
 }
 
@@ -314,15 +312,15 @@ void BLEHandler::NTC100KConfigCallback::onRead(BLECharacteristic *pCharacteristi
     DEBUG_PRINT(F(", R3="));
     DEBUG_PRINTLN(r3);
     
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     // Crear objeto anidado con el namespace "ntc_100k"
-    JsonObject doc = fullDoc.createNestedObject(NAMESPACE_NTC100K);
-    doc[KEY_NTC100K_T1] = t1;
-    doc[KEY_NTC100K_R1] = r1;
-    doc[KEY_NTC100K_T2] = t2;
-    doc[KEY_NTC100K_R2] = r2;
-    doc[KEY_NTC100K_T3] = t3;
-    doc[KEY_NTC100K_R3] = r3;
+    JsonObject doc = fullDoc.createNestedObject(JsonKeys::NS_NTC100K);
+    doc[JsonKeys::KEY_NTC100K_T1] = t1;
+    doc[JsonKeys::KEY_NTC100K_R1] = r1;
+    doc[JsonKeys::KEY_NTC100K_T2] = t2;
+    doc[JsonKeys::KEY_NTC100K_R2] = r2;
+    doc[JsonKeys::KEY_NTC100K_T3] = t3;
+    doc[JsonKeys::KEY_NTC100K_R3] = r3;
     
     String jsonString;
     serializeJson(fullDoc, jsonString);
@@ -337,34 +335,34 @@ void BLEHandler::NTC10KConfigCallback::onWrite(BLECharacteristic *pCharacteristi
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
     
     // Se espera JSON: { "ntc_10k": { <parámetros> } }
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
         DEBUG_PRINT(F("Error deserializando NTC10K config: "));
         DEBUG_PRINTLN(error.c_str());
         return;
     }
-    JsonObject doc = fullDoc[NAMESPACE_NTC10K];
+    JsonObject doc = fullDoc[JsonKeys::NS_NTC10K];
     DEBUG_PRINT(F("DEBUG: NTC10K valores parseados - T1: "));
-    DEBUG_PRINT(doc[KEY_NTC10K_T1] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC10K_T1] | 0.0);
     DEBUG_PRINT(F(", R1: "));
-    DEBUG_PRINT(doc[KEY_NTC10K_R1] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC10K_R1] | 0.0);
     DEBUG_PRINT(F(", T2: "));
-    DEBUG_PRINT(doc[KEY_NTC10K_T2] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC10K_T2] | 0.0);
     DEBUG_PRINT(F(", R2: "));
-    DEBUG_PRINT(doc[KEY_NTC10K_R2] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC10K_R2] | 0.0);
     DEBUG_PRINT(F(", T3: "));
-    DEBUG_PRINT(doc[KEY_NTC10K_T3] | 0.0);
+    DEBUG_PRINT(doc[JsonKeys::KEY_NTC10K_T3] | 0.0);
     DEBUG_PRINT(F(", R3: "));
-    DEBUG_PRINTLN(doc[KEY_NTC10K_R3] | 0.0);
+    DEBUG_PRINTLN(doc[JsonKeys::KEY_NTC10K_R3] | 0.0);
     
     ConfigManager::setNTC10KConfig(
-        doc[KEY_NTC10K_T1] | 0.0,
-        doc[KEY_NTC10K_R1] | 0.0,
-        doc[KEY_NTC10K_T2] | 0.0,
-        doc[KEY_NTC10K_R2] | 0.0,
-        doc[KEY_NTC10K_T3] | 0.0,
-        doc[KEY_NTC10K_R3] | 0.0
+        doc[JsonKeys::KEY_NTC10K_T1] | 0.0,
+        doc[JsonKeys::KEY_NTC10K_R1] | 0.0,
+        doc[JsonKeys::KEY_NTC10K_T2] | 0.0,
+        doc[JsonKeys::KEY_NTC10K_R2] | 0.0,
+        doc[JsonKeys::KEY_NTC10K_T3] | 0.0,
+        doc[JsonKeys::KEY_NTC10K_R3] | 0.0
     );
 }
 
@@ -385,14 +383,14 @@ void BLEHandler::NTC10KConfigCallback::onRead(BLECharacteristic *pCharacteristic
     DEBUG_PRINT(F(", R3="));
     DEBUG_PRINTLN(r3);
     
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
-    JsonObject doc = fullDoc.createNestedObject(NAMESPACE_NTC10K);
-    doc[KEY_NTC10K_T1] = t1;
-    doc[KEY_NTC10K_R1] = r1;
-    doc[KEY_NTC10K_T2] = t2;
-    doc[KEY_NTC10K_R2] = r2;
-    doc[KEY_NTC10K_T3] = t3;
-    doc[KEY_NTC10K_R3] = r3;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
+    JsonObject doc = fullDoc.createNestedObject(JsonKeys::NS_NTC10K);
+    doc[JsonKeys::KEY_NTC10K_T1] = t1;
+    doc[JsonKeys::KEY_NTC10K_R1] = r1;
+    doc[JsonKeys::KEY_NTC10K_T2] = t2;
+    doc[JsonKeys::KEY_NTC10K_R2] = r2;
+    doc[JsonKeys::KEY_NTC10K_T3] = t3;
+    doc[JsonKeys::KEY_NTC10K_R3] = r3;
     
     String jsonString;
     serializeJson(fullDoc, jsonString);
@@ -407,41 +405,41 @@ void BLEHandler::ConductivityConfigCallback::onWrite(BLECharacteristic *pCharact
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
     
     // Se espera un JSON: { "cond": { <parámetros> } }
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
         DEBUG_PRINT(F("Error deserializando Conductivity config: "));
         DEBUG_PRINTLN(error.c_str());
         return;
     }
-    JsonObject doc = fullDoc[NAMESPACE_COND];
+    JsonObject doc = fullDoc[JsonKeys::NS_COND];
     
     DEBUG_PRINT(F("DEBUG: Conductivity valores parseados - CT: "));
-    DEBUG_PRINT(doc[KEY_CONDUCT_CT] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_CONDUCT_CT] | 0.0f);
     DEBUG_PRINT(F(", CC: "));
-    DEBUG_PRINT(doc[KEY_CONDUCT_CC] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_CONDUCT_CC] | 0.0f);
     DEBUG_PRINT(F(", V1: "));
-    DEBUG_PRINT(doc[KEY_CONDUCT_V1] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_CONDUCT_V1] | 0.0f);
     DEBUG_PRINT(F(", T1: "));
-    DEBUG_PRINT(doc[KEY_CONDUCT_T1] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_CONDUCT_T1] | 0.0f);
     DEBUG_PRINT(F(", V2: "));
-    DEBUG_PRINT(doc[KEY_CONDUCT_V2] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_CONDUCT_V2] | 0.0f);
     DEBUG_PRINT(F(", T2: "));
-    DEBUG_PRINT(doc[KEY_CONDUCT_T2] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_CONDUCT_T2] | 0.0f);
     DEBUG_PRINT(F(", V3: "));
-    DEBUG_PRINT(doc[KEY_CONDUCT_V3] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_CONDUCT_V3] | 0.0f);
     DEBUG_PRINT(F(", T3: "));
-    DEBUG_PRINTLN(doc[KEY_CONDUCT_T3] | 0.0f);
+    DEBUG_PRINTLN(doc[JsonKeys::KEY_CONDUCT_T3] | 0.0f);
     
     ConfigManager::setConductivityConfig(
-        doc[KEY_CONDUCT_CT] | 0.0f,  // Temperatura de calibración
-        doc[KEY_CONDUCT_CC] | 0.0f,  // Coeficiente de compensación
-        doc[KEY_CONDUCT_V1] | 0.0f,
-        doc[KEY_CONDUCT_T1] | 0.0f,
-        doc[KEY_CONDUCT_V2] | 0.0f,
-        doc[KEY_CONDUCT_T2] | 0.0f,
-        doc[KEY_CONDUCT_V3] | 0.0f,
-        doc[KEY_CONDUCT_T3] | 0.0f
+        doc[JsonKeys::KEY_CONDUCT_CT] | 0.0f,  // Temperatura de calibración
+        doc[JsonKeys::KEY_CONDUCT_CC] | 0.0f,  // Coeficiente de compensación
+        doc[JsonKeys::KEY_CONDUCT_V1] | 0.0f,
+        doc[JsonKeys::KEY_CONDUCT_T1] | 0.0f,
+        doc[JsonKeys::KEY_CONDUCT_V2] | 0.0f,
+        doc[JsonKeys::KEY_CONDUCT_T2] | 0.0f,
+        doc[JsonKeys::KEY_CONDUCT_V3] | 0.0f,
+        doc[JsonKeys::KEY_CONDUCT_T3] | 0.0f
     );
 }
 
@@ -466,16 +464,16 @@ void BLEHandler::ConductivityConfigCallback::onRead(BLECharacteristic *pCharacte
     DEBUG_PRINT(F(", T3="));
     DEBUG_PRINTLN(t3);
     
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
-    JsonObject doc = fullDoc.createNestedObject(NAMESPACE_COND);
-    doc[KEY_CONDUCT_CT] = calTemp;
-    doc[KEY_CONDUCT_CC] = coefComp;
-    doc[KEY_CONDUCT_V1] = v1;
-    doc[KEY_CONDUCT_T1] = t1;
-    doc[KEY_CONDUCT_V2] = v2;
-    doc[KEY_CONDUCT_T2] = t2;
-    doc[KEY_CONDUCT_V3] = v3;
-    doc[KEY_CONDUCT_T3] = t3;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
+    JsonObject doc = fullDoc.createNestedObject(JsonKeys::NS_COND);
+    doc[JsonKeys::KEY_CONDUCT_CT] = calTemp;
+    doc[JsonKeys::KEY_CONDUCT_CC] = coefComp;
+    doc[JsonKeys::KEY_CONDUCT_V1] = v1;
+    doc[JsonKeys::KEY_CONDUCT_T1] = t1;
+    doc[JsonKeys::KEY_CONDUCT_V2] = v2;
+    doc[JsonKeys::KEY_CONDUCT_T2] = t2;
+    doc[JsonKeys::KEY_CONDUCT_V3] = v3;
+    doc[JsonKeys::KEY_CONDUCT_T3] = t3;
     
     String jsonString;
     serializeJson(fullDoc, jsonString);
@@ -490,37 +488,37 @@ void BLEHandler::PHConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
     
     // Se espera JSON: { "ph": { <parámetros> } }
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
         DEBUG_PRINT(F("Error deserializando pH config: "));
         DEBUG_PRINTLN(error.c_str());
         return;
     }
-    JsonObject doc = fullDoc[NAMESPACE_PH];
+    JsonObject doc = fullDoc[JsonKeys::NS_PH];
     DEBUG_PRINT(F("DEBUG: pH valores parseados - V1: "));
-    DEBUG_PRINT(doc[KEY_PH_V1] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_PH_V1] | 0.0f);
     DEBUG_PRINT(F(", T1: "));
-    DEBUG_PRINT(doc[KEY_PH_T1] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_PH_T1] | 0.0f);
     DEBUG_PRINT(F(", V2: "));
-    DEBUG_PRINT(doc[KEY_PH_V2] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_PH_V2] | 0.0f);
     DEBUG_PRINT(F(", T2: "));
-    DEBUG_PRINT(doc[KEY_PH_T2] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_PH_T2] | 0.0f);
     DEBUG_PRINT(F(", V3: "));
-    DEBUG_PRINT(doc[KEY_PH_V3] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_PH_V3] | 0.0f);
     DEBUG_PRINT(F(", T3: "));
-    DEBUG_PRINT(doc[KEY_PH_T3] | 0.0f);
+    DEBUG_PRINT(doc[JsonKeys::KEY_PH_T3] | 0.0f);
     DEBUG_PRINT(F(", CT: "));
-    DEBUG_PRINTLN(doc[KEY_PH_CT] | 25.0f);
+    DEBUG_PRINTLN(doc[JsonKeys::KEY_PH_CT] | 25.0f);
     
     ConfigManager::setPHConfig(
-        doc[KEY_PH_V1] | 0.0f,
-        doc[KEY_PH_T1] | 0.0f,
-        doc[KEY_PH_V2] | 0.0f,
-        doc[KEY_PH_T2] | 0.0f,
-        doc[KEY_PH_V3] | 0.0f,
-        doc[KEY_PH_T3] | 0.0f,
-        doc[KEY_PH_CT] | 25.0f
+        doc[JsonKeys::KEY_PH_V1] | 0.0f,
+        doc[JsonKeys::KEY_PH_T1] | 0.0f,
+        doc[JsonKeys::KEY_PH_V2] | 0.0f,
+        doc[JsonKeys::KEY_PH_T2] | 0.0f,
+        doc[JsonKeys::KEY_PH_V3] | 0.0f,
+        doc[JsonKeys::KEY_PH_T3] | 0.0f,
+        doc[JsonKeys::KEY_PH_CT] | 25.0f
     );
 }
 
@@ -543,15 +541,15 @@ void BLEHandler::PHConfigCallback::onRead(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINT(F(", CT="));
     DEBUG_PRINTLN(calTemp);
     
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
-    JsonObject doc = fullDoc.createNestedObject(NAMESPACE_PH);
-    doc[KEY_PH_V1] = v1;
-    doc[KEY_PH_T1] = t1;
-    doc[KEY_PH_V2] = v2;
-    doc[KEY_PH_T2] = t2;
-    doc[KEY_PH_V3] = v3;
-    doc[KEY_PH_T3] = t3;
-    doc[KEY_PH_CT] = calTemp;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
+    JsonObject doc = fullDoc.createNestedObject(JsonKeys::NS_PH);
+    doc[JsonKeys::KEY_PH_V1] = v1;
+    doc[JsonKeys::KEY_PH_T1] = t1;
+    doc[JsonKeys::KEY_PH_V2] = v2;
+    doc[JsonKeys::KEY_PH_T2] = t2;
+    doc[JsonKeys::KEY_PH_V3] = v3;
+    doc[JsonKeys::KEY_PH_T3] = t3;
+    doc[JsonKeys::KEY_PH_CT] = calTemp;
     
     String jsonString;
     serializeJson(fullDoc, jsonString);
@@ -566,7 +564,7 @@ void BLEHandler::SensorsConfigCallback::onWrite(BLECharacteristic *pCharacterist
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
     
     // Se espera un JSON: { "sensors": [ {<sensor1>}, {<sensor2>}, ... ] }
-    DynamicJsonDocument doc(JSON_DOC_SIZE_LARGE);
+    DynamicJsonDocument doc(System::JSON_DOC_SIZE_LARGE);
     DeserializationError error = deserializeJson(doc, pCharacteristic->getValue());
     if (error) {
         DEBUG_PRINT(F("Error deserializando Sensors config: "));
@@ -575,14 +573,14 @@ void BLEHandler::SensorsConfigCallback::onWrite(BLECharacteristic *pCharacterist
     }
     
     std::vector<SensorConfig> configs;
-    JsonArray sensorArray = doc[NAMESPACE_SENSORS];
+    JsonArray sensorArray = doc[JsonKeys::NS_SENSORS];
     
     for (JsonVariant sensor : sensorArray) {
         SensorConfig config;
-        strncpy(config.configKey, sensor[KEY_SENSOR] | "", sizeof(config.configKey));
-        strncpy(config.sensorId, sensor[KEY_SENSOR_ID] | "", sizeof(config.sensorId));
-        config.type = static_cast<SensorType>(sensor[KEY_SENSOR_TYPE] | 0);
-        config.enable = sensor[KEY_SENSOR_ENABLE] | false;
+        strncpy(config.configKey, sensor[JsonKeys::KEY_SENSOR] | "", sizeof(config.configKey));
+        strncpy(config.sensorId, sensor[JsonKeys::KEY_SENSOR_ID] | "", sizeof(config.sensorId));
+        config.type = static_cast<SensorType>(sensor[JsonKeys::KEY_SENSOR_TYPE] | 0);
+        config.enable = sensor[JsonKeys::KEY_SENSOR_ENABLE] | false;
         
         DEBUG_PRINT(F("DEBUG: Sensor config parsed - key: "));
         DEBUG_PRINT(config.configKey);
@@ -600,8 +598,8 @@ void BLEHandler::SensorsConfigCallback::onWrite(BLECharacteristic *pCharacterist
 }
 
 void BLEHandler::SensorsConfigCallback::onRead(BLECharacteristic *pCharacteristic) {
-    DynamicJsonDocument doc(JSON_DOC_SIZE_LARGE);
-    JsonArray sensorArray = doc.createNestedArray(NAMESPACE_SENSORS);
+    DynamicJsonDocument doc(System::JSON_DOC_SIZE_LARGE);
+    JsonArray sensorArray = doc.createNestedArray(JsonKeys::NS_SENSORS);
 
     std::vector<SensorConfig> configs = ConfigManager::getAllSensorConfigs();
     
@@ -617,10 +615,10 @@ void BLEHandler::SensorsConfigCallback::onRead(BLECharacteristic *pCharacteristi
         DEBUG_PRINTLN(sensor.enable ? "true" : "false");
 
         JsonObject obj = sensorArray.createNestedObject();
-        obj[KEY_SENSOR]             = sensor.configKey;
-        obj[KEY_SENSOR_ID]          = sensor.sensorId;
-        obj[KEY_SENSOR_TYPE]        = static_cast<int>(sensor.type);
-        obj[KEY_SENSOR_ENABLE]      = sensor.enable;
+        obj[JsonKeys::KEY_SENSOR]             = sensor.configKey;
+        obj[JsonKeys::KEY_SENSOR_ID]          = sensor.sensorId;
+        obj[JsonKeys::KEY_SENSOR_TYPE]        = static_cast<int>(sensor.type);
+        obj[JsonKeys::KEY_SENSOR_ENABLE]      = sensor.enable;
     }
 
     String jsonString;
@@ -636,18 +634,18 @@ void BLEHandler::LoRaConfigCallback::onWrite(BLECharacteristic* pCharacteristic)
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
     
     // Se espera JSON: { "lorawan": { <parámetros> } }
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
         DEBUG_PRINT(F("Error deserializando LoRa config: "));
         DEBUG_PRINTLN(error.c_str());
         return;
     }
-    JsonObject doc = fullDoc[NAMESPACE_LORAWAN];
-    String joinEUI     = doc[KEY_LORA_JOIN_EUI]      | "";
-    String devEUI     = doc[KEY_LORA_DEV_EUI]      | "";
-    String nwkKey     = doc[KEY_LORA_NWK_KEY]      | "";
-    String appKey     = doc[KEY_LORA_APP_KEY]      | "";
+    JsonObject doc = fullDoc[JsonKeys::NS_LORAWAN];
+    String joinEUI     = doc[JsonKeys::KEY_LORA_JOIN_EUI]      | "";
+    String devEUI     = doc[JsonKeys::KEY_LORA_DEV_EUI]      | "";
+    String nwkKey     = doc[JsonKeys::KEY_LORA_NWK_KEY]      | "";
+    String appKey     = doc[JsonKeys::KEY_LORA_APP_KEY]      | "";
     
     DEBUG_PRINT(F("DEBUG: LoRa valores parseados - joinEUI: "));
     DEBUG_PRINT(joinEUI);
@@ -673,12 +671,12 @@ void BLEHandler::LoRaConfigCallback::onRead(BLECharacteristic* pCharacteristic) 
     DEBUG_PRINTLN(config.nwkKey);
     
     // Aumentamos el tamaño del documento para asegurarnos de incluir todas las claves
-    StaticJsonDocument<JSON_DOC_SIZE_SMALL> fullDoc;
-    JsonObject doc = fullDoc.createNestedObject(NAMESPACE_LORAWAN);
-    doc[KEY_LORA_JOIN_EUI]     = config.joinEUI;
-    doc[KEY_LORA_DEV_EUI]     = config.devEUI;
-    doc[KEY_LORA_NWK_KEY]     = config.nwkKey;
-    doc[KEY_LORA_APP_KEY]     = config.appKey;
+    StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
+    JsonObject doc = fullDoc.createNestedObject(JsonKeys::NS_LORAWAN);
+    doc[JsonKeys::KEY_LORA_JOIN_EUI]     = config.joinEUI;
+    doc[JsonKeys::KEY_LORA_DEV_EUI]     = config.devEUI;
+    doc[JsonKeys::KEY_LORA_NWK_KEY]     = config.nwkKey;
+    doc[JsonKeys::KEY_LORA_APP_KEY]     = config.appKey;
     String jsonString;
     serializeJson(fullDoc, jsonString);
     DEBUG_PRINT(F("DEBUG: LoRaConfigCallback onRead - JSON enviado: "));

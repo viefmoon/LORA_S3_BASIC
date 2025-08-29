@@ -1,6 +1,5 @@
 #include "ModbusSensorManager.h"
-#include "config/system_config.h"  // Para MODBUS_BAUD_RATE y MODBUS_SERIAL_CONFIG
-#include "config/pins_config.h"    // Para MODBUS_RX_PIN y MODBUS_TX_PIN
+#include "config.h"  // Para todas las constantes de configuración
 
 #include "ModbusMaster.h"
 #include "debug.h"     // Para DEBUG_END
@@ -23,7 +22,7 @@ HardwareSerial modbusSerial(2); // Usar Serial2 para comunicación Modbus
 
 void ModbusSensorManager::beginModbus() {
     // Configurar Serial2 usando los parámetros definidos en config.h
-    modbusSerial.begin(MODBUS_BAUD_RATE, MODBUS_SERIAL_CONFIG, MODBUS_RX_PIN, MODBUS_TX_PIN);
+    modbusSerial.begin(System::MODBUS_BAUD_RATE, System::MODBUS_SERIAL_CONFIG, Pins::MODBUS_RX, Pins::MODBUS_TX);
     
     // Inicializar ModbusMaster con Serial2
     modbus.begin(0, modbusSerial); // El slave ID se configurará en cada petición
@@ -42,7 +41,7 @@ bool ModbusSensorManager::readHoldingRegisters(uint8_t address, uint16_t startRe
     modbus.begin(address, modbusSerial);
     
     // Implementar reintentos de lectura
-    for (uint8_t retry = 0; retry < MODBUS_MAX_RETRY; retry++) {
+    for (uint8_t retry = 0; retry < System::MODBUS_MAX_RETRY; retry++) {
         // Registrar el tiempo de inicio para implementar timeout manual
         uint32_t startTime = millis();
         
@@ -60,7 +59,7 @@ bool ModbusSensorManager::readHoldingRegisters(uint8_t address, uint16_t startRe
         }
         
         // Verificar si se agotó el tiempo (timeout personalizado)
-        if ((millis() - startTime) >= MODBUS_RESPONSE_TIMEOUT) {
+        if ((millis() - startTime) >= System::MODBUS_RESPONSE_TIMEOUT) {
             DEBUG_PRINTLN("Timeout en comunicación Modbus");
             break; // Salir del bucle de reintentos si se agota el tiempo
         }
@@ -70,7 +69,7 @@ bool ModbusSensorManager::readHoldingRegisters(uint8_t address, uint16_t startRe
     }
     
     // Si llegamos aquí, todos los intentos fallaron
-    DEBUG_PRINTF("Error Modbus después de %d intentos\n", MODBUS_MAX_RETRY);
+    DEBUG_PRINTF("Error Modbus después de %d intentos\n", System::MODBUS_MAX_RETRY);
     return false;
 }
 

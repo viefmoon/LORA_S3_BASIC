@@ -1,4 +1,5 @@
 #include "SleepManager.h"
+#include "config.h"
 #include "debug.h"
 #include "LoRaManager.h"
 #include "esp_sleep.h"
@@ -29,7 +30,7 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
     configurePinsForDeepSleep();
 
     // --- INICIO: Configuración específica del pin de despertar ---
-    gpio_num_t wakePin = (gpio_num_t)CONFIG_PIN;
+    gpio_num_t wakePin = (gpio_num_t)Pins::CONFIG_PIN;
 
     // 1. Desinicializar por si acaso (buena práctica)
     rtc_gpio_deinit(wakePin);
@@ -62,63 +63,63 @@ void SleepManager::goToDeepSleep(uint32_t timeToSleep,
  */
 void SleepManager::configurePinsForDeepSleep() {
     // Configurar pines específicos del módulo LoRa como ANALOG
-    pinMode(ONE_WIRE_BUS, ANALOG); //alta impedancia
+    pinMode(Pins::ONE_WIRE_BUS, ANALOG); //alta impedancia
 
     // Configurar pines I2C como ANALOG
-    pinMode(I2C_SCL_PIN, ANALOG); //alta impedancia
-    pinMode(I2C_SDA_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::I2C_SCL, ANALOG); //alta impedancia
+    pinMode(Pins::I2C_SDA, ANALOG); //alta impedancia
 
     // Serial 1
-    pinMode(SERIAL1_RX_PIN, ANALOG); //alta impedancia
-    pinMode(SERIAL1_TX_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::SERIAL1_RX, ANALOG); //alta impedancia
+    pinMode(Pins::SERIAL1_TX, ANALOG); //alta impedancia
 
     // Configurar pin de control de batería como salida
-    pinMode(BATTERY_CONTROL_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::BATTERY_CONTROL, ANALOG); //alta impedancia
 
     // Configurar pines del módulo LoRa como ANALOG
-    pinMode(LORA_RST_PIN, ANALOG); //alta impedancia
-    pinMode(LORA_BUSY_PIN, ANALOG); //alta impedancia
-    pinMode(LORA_DIO1_PIN, ANALOG); //alta impedancia
-    pinMode(SPI_LORA_SCK_PIN, ANALOG); //alta impedancia
-    pinMode(SPI_LORA_MISO_PIN, ANALOG); //alta impedancia
-    pinMode(SPI_LORA_MOSI_PIN, ANALOG); //alta impedancia
+    pinMode(LoRa::RST_PIN, ANALOG); //alta impedancia
+    pinMode(LoRa::BUSY_PIN, ANALOG); //alta impedancia
+    pinMode(LoRa::DIO1_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::LoRaSPI::SCK, ANALOG); //alta impedancia
+    pinMode(Pins::LoRaSPI::MISO, ANALOG); //alta impedancia
+    pinMode(Pins::LoRaSPI::MOSI, ANALOG); //alta impedancia
 
     // SPI PARA RTD
-    pinMode(SPI_SCK_PIN, ANALOG); //alta impedancia
-    pinMode(SPI_MISO_PIN, ANALOG); //alta impedancia
-    pinMode(SPI_MOSI_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::RtdSPI::SCK, ANALOG); //alta impedancia
+    pinMode(Pins::RtdSPI::MISO, ANALOG); //alta impedancia
+    pinMode(Pins::RtdSPI::MOSI, ANALOG); //alta impedancia
 
     // Configurar pines de sensores analógicos como ANALOG
-    pinMode(NTC100K_0_PIN, ANALOG); //alta impedancia
-    pinMode(NTC100K_1_PIN, ANALOG); //alta impedancia
-    pinMode(NTC10K_PIN, ANALOG); //alta impedancia
-    pinMode(PH_SENSOR_PIN, ANALOG); //alta impedancia
-    pinMode(COND_SENSOR_PIN, ANALOG); //alta impedancia
-    pinMode(HDS10_SENSOR_PIN, ANALOG); //alta impedancia
-    pinMode(BATTERY_SENSOR_PIN, ANALOG); //alta impedancia
-    pinMode(SOILH_SENSOR_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::NTC100K_0, ANALOG); //alta impedancia
+    pinMode(Pins::NTC100K_1, ANALOG); //alta impedancia
+    pinMode(Pins::NTC10K, ANALOG); //alta impedancia
+    pinMode(Pins::PH_SENSOR, ANALOG); //alta impedancia
+    pinMode(Pins::COND_SENSOR, ANALOG); //alta impedancia
+    pinMode(Pins::HDS10_SENSOR, ANALOG); //alta impedancia
+    pinMode(Pins::BATTERY_SENSOR, ANALOG); //alta impedancia
+    pinMode(Pins::SOILH_SENSOR, ANALOG); //alta impedancia
 
     // Configurar pin de LED de configuración como alta impedancia
-    pinMode(CONFIG_LED_PIN, ANALOG); //alta impedancia
-    pinMode(LED1_PIN, ANALOG); //alta impedancia
-    pinMode(LED2_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::CONFIG_LED, ANALOG); //alta impedancia
+    pinMode(Pins::LED1, ANALOG); //alta impedancia
+    pinMode(Pins::LED2, ANALOG); //alta impedancia
 
     //Modbus
-    pinMode(MODBUS_RX_PIN, ANALOG); //alta impedancia
-    pinMode(MODBUS_TX_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::MODBUS_RX, ANALOG); //alta impedancia
+    pinMode(Pins::MODBUS_TX, ANALOG); //alta impedancia
 
     // Alimentacion
-    pinMode(POWER_3V3_PIN, ANALOG); //alta impedancia
-    pinMode(POWER_12V_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::POWER_3V3, ANALOG); //alta impedancia
+    pinMode(Pins::POWER_12V, ANALOG); //alta impedancia
 
     // FlowSensor
-    pinMode(FLOW_SENSOR_PIN, ANALOG); //alta impedancia
+    pinMode(Pins::FLOW_SENSOR, ANALOG); //alta impedancia
 
 
-    digitalWrite(LORA_NSS_PIN, HIGH);
-    gpio_hold_en((gpio_num_t)LORA_NSS_PIN);
-    digitalWrite(PT100_CS_PIN, HIGH);
-    gpio_hold_en((gpio_num_t)PT100_CS_PIN);
+    digitalWrite(Pins::LoRaSPI::NSS, HIGH);
+    gpio_hold_en((gpio_num_t)Pins::LoRaSPI::NSS);
+    digitalWrite(Pins::RtdSPI::PT100_CS, HIGH);
+    gpio_hold_en((gpio_num_t)Pins::RtdSPI::PT100_CS);
 }
 
 /**
@@ -127,8 +128,8 @@ void SleepManager::configurePinsForDeepSleep() {
  */
 void SleepManager::releaseHeldPins() {
     // Liberar otros pines si se ha aplicado retención
-    gpio_hold_dis((gpio_num_t)LORA_NSS_PIN);
-    gpio_hold_dis((gpio_num_t)PT100_CS_PIN);
+    gpio_hold_dis((gpio_num_t)Pins::LoRaSPI::NSS);
+    gpio_hold_dis((gpio_num_t)Pins::RtdSPI::PT100_CS);
 }
 
 /**

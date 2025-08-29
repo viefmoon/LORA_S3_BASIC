@@ -2,7 +2,7 @@
 #define DS18B20_SENSOR_H
 
 #include <Arduino.h>
-#include "config/pins_config.h"
+#include "config.h"
 #include "debug.h"
 
 #include <DallasTemperature.h>

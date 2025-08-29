@@ -15,13 +15,13 @@
 bool HardwareManager::initHardware(SPIClass& spiLora, 
                                  const std::vector<SensorConfig>& enabledNormalSensors) {
     // Configurar GPIO one wire con pull-up
-    pinMode(ONE_WIRE_BUS, INPUT_PULLUP);
+    pinMode(Pins::ONE_WIRE_BUS, INPUT_PULLUP);
     
     // Inicializar el pin de control de batería y desactivar la medición
-    pinMode(BATTERY_CONTROL_PIN, OUTPUT);
-    digitalWrite(BATTERY_CONTROL_PIN, HIGH);
-    pinMode(CONFIG_LED_PIN, OUTPUT);
-    digitalWrite(CONFIG_LED_PIN, LOW); // Apagar LED inicialmente
+    pinMode(Pins::BATTERY_CONTROL, OUTPUT);
+    digitalWrite(Pins::BATTERY_CONTROL, HIGH);
+    pinMode(Pins::CONFIG_LED, OUTPUT);
+    digitalWrite(Pins::CONFIG_LED, LOW); // Apagar LED inicialmente
     
     // Verificar si hay algún sensor I2C habilitado
     bool someI2cSensorEnabled = false;
@@ -44,11 +44,11 @@ bool HardwareManager::initHardware(SPIClass& spiLora,
 
     // Inicializar I2C solo si es necesario
     if (someI2cSensorEnabled) {
-        Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
+        Wire.begin(Pins::I2C_SDA, Pins::I2C_SCL);
     }
     
     // Inicializar SPI para LORA con pines definidos
-    spiLora.begin(SPI_LORA_SCK_PIN, SPI_LORA_MISO_PIN, SPI_LORA_MOSI_PIN);
+    spiLora.begin(Pins::LoRaSPI::SCK, Pins::LoRaSPI::MISO, Pins::LoRaSPI::MOSI);
     
     // Inicializar los pines de selección SPI (SS)
     initializeSPISSPins();
@@ -61,10 +61,10 @@ bool HardwareManager::initHardware(SPIClass& spiLora,
 
 void HardwareManager::initializeSPISSPins() {
     // Inicializar SS del LORA conectado directamente
-    pinMode(LORA_NSS_PIN, OUTPUT);
-    digitalWrite(LORA_NSS_PIN, HIGH);
+    pinMode(Pins::LoRaSPI::NSS, OUTPUT);
+    digitalWrite(Pins::LoRaSPI::NSS, HIGH);
 
     // Inicializar SS de PT100 como pin nativo
-    pinMode(PT100_CS_PIN, OUTPUT);
-    digitalWrite(PT100_CS_PIN, HIGH);
+    pinMode(Pins::RtdSPI::PT100_CS, OUTPUT);
+    digitalWrite(Pins::RtdSPI::PT100_CS, HIGH);
 }

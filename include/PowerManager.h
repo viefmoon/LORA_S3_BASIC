@@ -2,7 +2,7 @@
 #define POWER_MANAGER_H
 
 #include <Arduino.h>
-#include "config/pins_config.h"
+#include "config.h"
 
 /**
  * @brief Clase utilitaria para gestionar el control de energía de los componentes del sistema.

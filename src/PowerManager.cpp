@@ -1,36 +1,31 @@
 #include "PowerManager.h"
-#include "config/sensor_defaults.h" // Para POWER_STABILIZE_DELAY
-
-// Definir constante localmente (no redefinir si ya existe)
-#ifndef POWER_STABILIZE_DELAY
-#define POWER_STABILIZE_DELAY 1
-#endif
+#include "config.h" // Para todas las constantes de configuración
 
 void PowerManager::begin() {
     // Configurar pines como salidas
-    pinMode(POWER_3V3_PIN, OUTPUT);
-    pinMode(POWER_12V_PIN, OUTPUT);
+    pinMode(Pins::POWER_3V3, OUTPUT);
+    pinMode(Pins::POWER_12V, OUTPUT);
     
     // Asegurar que todas las fuentes están apagadas al inicio
     allPowerOff();
 }
 
 void PowerManager::power3V3On() {
-    digitalWrite(POWER_3V3_PIN, LOW);
-    delay(POWER_STABILIZE_DELAY);
+    digitalWrite(Pins::POWER_3V3, LOW);
+    delay(Sensors::POWER_STABILIZE_DELAY_MS);
 }
 
 void PowerManager::power3V3Off() {
-    digitalWrite(POWER_3V3_PIN, HIGH);
+    digitalWrite(Pins::POWER_3V3, HIGH);
 }
 
 void PowerManager::power12VOn() {
-    digitalWrite(POWER_12V_PIN, HIGH);
-    delay(POWER_STABILIZE_DELAY);
+    digitalWrite(Pins::POWER_12V, HIGH);
+    delay(Sensors::POWER_STABILIZE_DELAY_MS);
 }
 
 void PowerManager::power12VOff() {
-    digitalWrite(POWER_12V_PIN, LOW);
+    digitalWrite(Pins::POWER_12V, LOW);
 }
 
 void PowerManager::allPowerOff() {

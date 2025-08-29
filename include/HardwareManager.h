@@ -10,7 +10,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include <SPI.h>
-#include "config/system_config.h"
+#include "config.h"
 #include "PowerManager.h"
 #include "SHT31.h"
 #include "sensor_types.h"

@@ -2,8 +2,7 @@
 #include <cmath>  // Para fabs() y otras funciones matemáticas
 #include "config_manager.h"
 #include "debug.h"
-#include "config/sensor_defaults.h"  // Para NTC_TEMP_MIN y NTC_TEMP_MAX
-#include "config/pins_config.h"      // Para NTC100K_0_PIN, NTC100K_1_PIN y NTC10K_PIN
+#include "config.h"  // Para todas las constantes de configuración
 
 void NtcManager::calculateSteinhartHartCoeffs(double T1, double R1,
                                           double T2, double R2,
@@ -100,9 +99,9 @@ double NtcManager::readNtc100kTemperature(const char* configKey) {
     // Seleccionar el pin correcto según el configKey
     int ntcPin = -1;
     if (strcmp(configKey, "0") == 0) {
-        ntcPin = NTC100K_0_PIN;
+        ntcPin = Pins::NTC100K_0;
     } else if (strcmp(configKey, "1") == 0) {
-        ntcPin = NTC100K_1_PIN;
+        ntcPin = Pins::NTC100K_1;
     } else {
         // Si no coincide con ninguna configuración, retornamos NAN
         return NAN;
@@ -135,7 +134,7 @@ double NtcManager::readNtc100kTemperature(const char* configKey) {
     double tempC = steinhartHartTemperature(Rntc, A, B, C);
     
     // Validar que el valor de temperatura está dentro de los límites aceptables
-    if (isnan(tempC) || tempC < NTC_TEMP_MIN || tempC > NTC_TEMP_MAX) {
+    if (isnan(tempC) || tempC < Sensors::NTC_TEMP_MIN || tempC > Sensors::NTC_TEMP_MAX) {
         return NAN;
     }
     
@@ -158,7 +157,7 @@ double NtcManager::readNtc10kTemperature() {
     calculateSteinhartHartCoeffs(T1K, r1, T2K, r2, T3K, r3, A, B, C);
 
     // Leer el valor analógico del pin NTC10K usando analogReadMilliVolts
-    int adcValue = analogReadMilliVolts(NTC10K_PIN);
+    int adcValue = analogReadMilliVolts(Pins::NTC10K);
     
     // Convertir de milivoltios a voltios
     float voltage = adcValue / 1000.0f;
@@ -182,7 +181,7 @@ double NtcManager::readNtc10kTemperature() {
     double tempC = steinhartHartTemperature(Rntc, A, B, C);
     
     // Validar que el valor de temperatura está dentro de los límites aceptables
-    if (isnan(tempC) || tempC < NTC_TEMP_MIN || tempC > NTC_TEMP_MAX) {
+    if (isnan(tempC) || tempC < Sensors::NTC_TEMP_MIN || tempC > Sensors::NTC_TEMP_MAX) {
         return NAN;
     }
     

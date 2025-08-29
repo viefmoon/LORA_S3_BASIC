@@ -7,9 +7,7 @@
 #include <BLEAdvertising.h>
 #include <BLECharacteristic.h>
 #include <ArduinoJson.h>
-#include "config/pins_config.h"
-#include "config/ble_config.h"
-#include "config/json_keys.h"
+#include "config.h"
 #include "config_manager.h"
 #include "debug.h"
 
@@ -19,7 +17,7 @@ public:
     // Variables para control de estado BLE
     static bool isConnected;
     static unsigned long connectionStartTime;
-    static const unsigned long connectionTimeout = CONFIG_BLE_MAX_CONN_TIME; // Usar constante de config.h
+    static const unsigned long connectionTimeout = BLE::CONFIG_MAX_CONN_TIME_MS; // Usar constante de config.h
     static BLEServer* pBLEServer; // Referencia global al servidor BLE
     static bool shouldExitOnDisconnect; // Indica si debemos salir del modo configuración al desconectar
     

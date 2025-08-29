@@ -10,9 +10,7 @@
 #include <map>
 #include <string>
 
-#include "config/pins_config.h"
-#include "config/system_config.h"
-#include "config/lora_config.h"
+#include "config.h"
 #include "debug.h"
 #include "PowerManager.h"
 #include <RadioLib.h>
@@ -49,7 +47,7 @@ bool wokeFromConfigPin = false;
 // Función de inicialización temprana
 void preinit() {
   // Establecer frecuencia de CPU antes de cualquier otra inicialización
-  setCpuFrequencyMhz(CPU_FREQUENCY_MHZ);
+  setCpuFrequencyMhz(System::CPU_FREQUENCY_MHZ);
 }
 
 //==============================================================================
@@ -71,13 +69,15 @@ Preferences preferences;
 Preferences store;
 
 // Configuración LoRa
-const LoRaWANBand_t Region = LORA_REGION;
-const uint8_t subBand = LORA_SUBBAND;
+// US915 es una variable externa definida en RadioLib
+extern const LoRaWANBand_t US915;
+const LoRaWANBand_t Region = US915;  // Usar US915 para Estados Unidos
+const uint8_t subBand = LoRa::SUBBAND;
 
 // Hardware de comunicaciones LoRa
 SPIClass spiLora(FSPI);
-SPISettings spiRadioSettings(SPI_LORA_CLOCK, MSBFIRST, SPI_MODE0);
-SX1262 radio = new Module(LORA_NSS_PIN, LORA_DIO1_PIN, LORA_RST_PIN, LORA_BUSY_PIN, spiLora, spiRadioSettings);
+SPISettings spiRadioSettings(LoRa::SPI_CLOCK, MSBFIRST, SPI_MODE0);
+SX1262 radio = new Module(Pins::LoRaSPI::NSS, Pins::LoRaSPI::DIO1, Pins::LoRaSPI::RST, Pins::LoRaSPI::BUSY, spiLora, spiRadioSettings);
 LoRaWANNode node(&radio, &Region, subBand);
 RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 
@@ -87,9 +87,9 @@ std::vector<ModbusSensorConfig> enabledModbusSensors;
 std::vector<SensorConfig> enabledAdcSensors;
 
 // Objetos de sensores de temperatura y humedad
-OneWire oneWire(ONE_WIRE_BUS);
+OneWire oneWire(Pins::ONE_WIRE_BUS);
 DallasTemperature dallasTemp(&oneWire);
-SHT31 sht30Sensor(SHT31_I2C_ADDR, &Wire);
+SHT31 sht30Sensor(Sensors::SHT31_I2C_ADDR, &Wire);
 SensirionI2cSht4x sht40Sensor;
 
 // Sensores ambientales
@@ -99,7 +99,7 @@ Adafruit_VEML7700 veml7700;
 SCD4x scd4x(SCD4x_SENSOR_SCD41);
 
 // Sensores analógicos
-Adafruit_MAX31865 rtdSensor = Adafruit_MAX31865(PT100_CS_PIN, SPI_MOSI_PIN, SPI_MISO_PIN, SPI_SCK_PIN);
+Adafruit_MAX31865 rtdSensor = Adafruit_MAX31865(Pins::RtdSPI::PT100_CS, Pins::RtdSPI::MOSI, Pins::RtdSPI::MISO, Pins::RtdSPI::SCK);
 
 // Variables para almacenar lecturas de sensores
 std::vector<SensorReading> normalReadings;
@@ -211,7 +211,7 @@ void sendData() {
 void setup() {
     // Inicializar contador de tiempo y log
     setupStartTime = millis();
-    DEBUG_BEGIN(SERIAL_BAUD_RATE);
+    DEBUG_BEGIN(System::SERIAL_BAUD_RATE);
     
     // Determinar causa del despertar
     SleepManager::handleWakeupCause(wokeFromConfigPin);

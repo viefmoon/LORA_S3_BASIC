@@ -1,7 +1,7 @@
 #include "sensors/HDS10Sensor.h"
 
 #include <cmath>
-#include "config/pins_config.h"
+#include "config.h"
 
 /**
  * @brief Convierte la resistencia del sensor HDS10 a porcentaje de humedad usando interpolación logarítmica
@@ -58,7 +58,7 @@ float HDS10Sensor::convertResistanceToHumidity(float sensorR) {
  */
 float HDS10Sensor::read() {
     // Leer el valor del pin analógico
-    int adcValue = analogRead(HDS10_SENSOR_PIN);
+    int adcValue = analogRead(Pins::HDS10_SENSOR);
     
     // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
     float voltage = adcValue * (3.3f / 4095.0f);

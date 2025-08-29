@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include "sensors/NtcManager.h"
-#include "config/pins_config.h"
+#include "config.h"
 #include "config_manager.h"
 
 /**
@@ -65,7 +65,7 @@ float PHSensor::convertVoltageToPH(float voltage, float tempC) {
  */
 float PHSensor::read() {
     // Leer el valor del pin analógico
-    int adcValue = analogRead(PH_SENSOR_PIN);
+    int adcValue = analogRead(Pins::PH_SENSOR);
     
     // Convertir el valor ADC a voltaje (0-3.3V con resolución de 12 bits)
     float voltage = adcValue * (3.3f / 4095.0f);

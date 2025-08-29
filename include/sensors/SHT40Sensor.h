@@ -2,7 +2,7 @@
 #define SHT40_SENSOR_H
 
 #include <Arduino.h>
-#include "config/pins_config.h"
+#include "config.h"
 #include "debug.h"
 #include <SensirionI2cSht4x.h>
 
