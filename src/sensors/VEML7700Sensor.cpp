@@ -1,5 +1,7 @@
 #include "sensors/VEML7700Sensor.h"
 
+static Adafruit_VEML7700 veml7700;
+
 VEML7700Sensor::VEML7700Sensor(const std::string& id) {
     this->_id = id;
     this->_type = VEML7700;
@@ -14,7 +16,6 @@ VEML7700Sensor::VEML7700Sensor(const std::string& id) {
     return false;
     }    veml7700.setGain(VEML7700_GAIN_1_8);
 
-    // Usar el tiempo de integración más corto para una lectura rápida
     veml7700.setIntegrationTime(VEML7700_IT_25MS);
     return true;
 }
@@ -28,7 +29,6 @@ VEML7700Sensor::VEML7700Sensor(const std::string& id) {
         return reading;
     }
 
-    // Leer el valor de luz en lux
     float lux = veml7700.readLux();
     if (isnan(lux) || lux < 0.0f) {
         reading.value = NAN;

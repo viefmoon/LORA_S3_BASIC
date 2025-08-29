@@ -2,8 +2,6 @@
 #include <Wire.h>
 #include <SPI.h>
 #include <Preferences.h>
-#include <OneWire.h>
-#include <DallasTemperature.h>
 #include <vector>
 #include <ArduinoJson.h>
 #include <cmath>
@@ -25,17 +23,10 @@
 #include "config_manager.h"
 #include "utilities.h"
 #include <SensirionI2cSht3x.h>
-#include "SparkFun_SCD4x_Arduino_Library.h"
 #include "LoRaManager.h"
 #include "BLE.h"
 #include "HardwareManager.h"
 #include "SleepManager.h"
-#include "SHT31.h"
-#include <Adafruit_MAX31865.h>
-#include <Adafruit_BME680.h>
-#include <Adafruit_BME280.h>
-#include <Adafruit_VEML7700.h>
-#include <SensirionI2cSht4x.h>
 
 bool wokeFromConfigPin = false;
 
@@ -64,19 +55,7 @@ SX1262 radio = new Module(Pins::LoRaSPI::NSS, Pins::LoRaSPI::DIO1, Pins::LoRaSPI
 LoRaWANNode node(&radio, &Region, subBand);
 RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 
-std::vector<SensorConfig> enabledNormalSensors;
 
-OneWire oneWire(Pins::ONE_WIRE_BUS);
-DallasTemperature dallasTemp(&oneWire);
-SHT31 sht30Sensor(Sensors::SHT31_I2C_ADDR, &Wire);
-SensirionI2cSht4x sht40Sensor;
-
-Adafruit_BME680 bme680Sensor(&Wire);
-Adafruit_BME280 bme280Sensor;
-Adafruit_VEML7700 veml7700;
-SCD4x scd4x(SCD4x_SENSOR_SCD41);
-
-Adafruit_MAX31865 rtdSensor = Adafruit_MAX31865(Pins::RtdSPI::PT100_CS, Pins::RtdSPI::MOSI, Pins::RtdSPI::MISO, Pins::RtdSPI::SCK);
 
 std::vector<SensorReading> normalReadings;
 
@@ -94,9 +73,7 @@ bool initHardware() {
     }
     ConfigManager::getSystemConfig(systemInitialized, timeToSleep, deviceId, stationId);
 
-    enabledNormalSensors = ConfigManager::getEnabledSensorConfigs();
-
-    if (!HardwareManager::initHardware(spiLora, enabledNormalSensors)) {
+    if (!HardwareManager::initHardware(spiLora)) {
         return false;
     }
 

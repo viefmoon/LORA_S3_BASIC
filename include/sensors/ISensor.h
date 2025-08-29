@@ -41,4 +41,4 @@ protected:
     bool _initialized = false;
 };
 
-#endif // ISENSOR_H
+#endif

@@ -6,8 +6,6 @@
 #include "config.h"
 #include <Adafruit_MAX31865.h>
 
-// Variable externa del sensor RTD
-extern Adafruit_MAX31865 rtdSensor;
 
 class RTDSensor : public ISensor {
 public:
@@ -21,9 +19,8 @@ public:
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 
 private:
-    // Parámetros del RTD
-    static constexpr float RREF = 430.0f;  // Resistencia de referencia
-    static constexpr float RNOMINAL = 100.0f;  // Resistencia nominal PT100
+    static constexpr float RREF = 430.0f;
+    static constexpr float RNOMINAL = 100.0f;
 };
 
-#endif // RTD_SENSOR_H
+#endif

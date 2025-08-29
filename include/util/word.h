@@ -61,4 +61,4 @@ static inline uint16_t highWord(uint32_t ww)
 }
 
 
-#endif /* _UTIL_WORD_H_ */
+#endif

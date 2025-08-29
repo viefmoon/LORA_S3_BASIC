@@ -5,22 +5,20 @@
 #include <vector>
 #include <map>
 
-// Incluimos el archivo de configuración principal
 #include "config.h"
 
 /************************************************************************
  * TIEMPOS DE ESTABILIZACIÓN PARA SENSORES MODBUS (en ms)
  ************************************************************************/
 
-#define MODBUS_ENV4_STABILIZATION_TIME 5000   // Tiempo de estabilización para sensor ENV4 Modbus
-// Añadir aquí otros tiempos de estabilización para sensores Modbus
+#define MODBUS_ENV4_STABILIZATION_TIME 5000
 
 /**
  * @brief Estructura para variables múltiples en un solo sensor.
  *        Por ejemplo, un sensor SHT30 que da Temperature y Humidity.
  */
 struct SubValue {
-    float value;     // El orden de los valores en el vector es importante
+    float value;
 };
 
 /************************************************************************
@@ -31,7 +29,6 @@ struct SubValue {
  * @brief Enumeración de tipos de sensores disponibles.
  */
 enum SensorType {
-    // Sensores estándar (no-Modbus)
     N100K,    // NTC 100K
     N10K,     // NTC 10K
     HDS10,    // Condensation Humidity
@@ -43,16 +40,13 @@ enum SensorType {
     VEML7700, // Sensor de luz VEML7700 (Lux)
     BATTERY,  // Battery voltage sensor
 
-    // Sensores múltiples (valor 100 en el mapa)
     SHT30 = 100,  // Sensor SHT30: [0]=Temperatura(°C), [1]=Humedad(%)
     BME680 = 101, // Sensor BME680: [0]=Temp(°C), [1]=Hum(%), [2]=Press(hPa), [3]=Gas(KOhms)
     CO2 = 102,    // Sensor CO2 SCD4x: [0]=CO2(ppm), [1]=Temp(°C), [2]=Hum(%)
     BME280 = 103, // Sensor BME280: [0]=Temp(°C), [1]=Hum(%), [2]=Press(hPa)
     SHT40 = 104,  // Sensor SHT40: [0]=Temperatura(°C), [1]=Humedad(%)
 
-    // Sensores Modbus
     ENV4 = 110,   // Sensor ambiental 4 en 1: [0]=Humedad(%), [1]=Temperatura(°C), [2]=Presión(kPa), [3]=Iluminación(lux)
-    // Aquí se pueden agregar más tipos de sensores Modbus
 };
 
 /**
@@ -97,4 +91,4 @@ struct ModbusSensorReading {
     SensorType type;           // Tipo de sensor Modbus
     std::vector<SubValue> subValues;};
 
-#endif // SENSOR_TYPES_H
+#endif

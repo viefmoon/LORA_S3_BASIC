@@ -5,9 +5,6 @@
 #include "sensors/ISensor.h"
 #include "config.h"
 #include "debug.h"
-#include "SHT31.h"
-
-extern SHT31 sht30Sensor;
 
 class SHT30Sensor : public ISensor {
 public:    explicit SHT30Sensor(const std::string& id);
@@ -20,4 +17,4 @@ public:    explicit SHT30Sensor(const std::string& id);
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_MAIN; }
 };
 
-#endif // SHT30_SENSOR_H
+#endif

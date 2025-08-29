@@ -29,4 +29,4 @@ private:
     float convertVoltageToPH(float voltage, float tempC);
 };
 
-#endif // PH_SENSOR_H
+#endif

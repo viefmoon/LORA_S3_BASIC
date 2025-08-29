@@ -1,16 +1,13 @@
 #pragma once
 #include <Preferences.h>
 #include <vector>
-#include <Arduino.h>  // Se incluye para utilizar el tipo String
+#include <Arduino.h>
 #include "sensor_types.h"
-#include <RadioLib.h> // Añadido para RADIOLIB_LORAWAN_SESSION_BUF_SIZE
+#include <RadioLib.h>
 
-// Incluimos el archivo de configuración principal
 #include "config.h"
 
-// Definición de la estructura para la configuración de LoRa
 struct LoRaConfig {
-    //FOR OTAA
     String joinEUI;
     String devEUI;
     String nwkKey;
@@ -84,9 +81,8 @@ public:
     static void setPHConfig(float v1, float t1, float v2, float t2, float v3, float t3, float defaultTemp);
 
 private:
-    // Configuraciones por defecto
-    static const SensorConfig defaultConfigs[]; // Configs no-Modbus
-    static const ModbusSensorConfig defaultModbusSensors[]; // Configs Modbus
-    static const SensorConfig defaultAdcSensors[]; // Configs ADC
+    static const SensorConfig defaultConfigs[];
+    static const ModbusSensorConfig defaultModbusSensors[];
+    static const SensorConfig defaultAdcSensors[];
 };
 

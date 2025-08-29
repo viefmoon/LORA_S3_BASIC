@@ -15,11 +15,9 @@
 #include "sensor_types.h"  // Incluido para acceder a ModbusSensorReading
 #include "config_manager.h"
 
-// Inicialización de variables estáticas
 LoRaWANNode* LoRaManager::node = nullptr;
 SX1262* LoRaManager::radioModule = nullptr;
 
-// Referencias externas
 extern RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 extern ESP32Time rtc;
 
@@ -30,7 +28,6 @@ int16_t LoRaManager::begin(SX1262* radio, const LoRaWANBand_t* region, uint8_t s
         return state;
     }
 
-    // Crear el nodo LoRaWAN
     node = new LoRaWANNode(radio, region, subBand);
     return RADIOLIB_ERR_NONE;
 }
@@ -39,34 +36,28 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
     int16_t state = RADIOLIB_ERR_UNKNOWN;
     Preferences store;
 
-    // Obtener configuración LoRa
     LoRaConfig loraConfig = ConfigManager::getLoRaConfig();
 
-    // Convertir strings de EUIs a uint64_t
     uint64_t joinEUI = 0, devEUI = 0;
     if (!parseEUIString(loraConfig.joinEUI.c_str(), &joinEUI) ||
         !parseEUIString(loraConfig.devEUI.c_str(), &devEUI)) {
         return state;
     }
 
-    // Parsear las claves
     uint8_t nwkKey[16], appKey[16];
     parseKeyString(loraConfig.nwkKey, nwkKey, 16);
     parseKeyString(loraConfig.appKey, appKey, 16);
 
-    // Configurar la sesión OTAA
     node.beginOTAA(joinEUI, devEUI, nwkKey, appKey);
 
     store.begin("radiolib");
 
-    // Intentar restaurar nonces si existen
     if (store.isKey("nonces")) {
         uint8_t buffer[RADIOLIB_LORAWAN_NONCES_BUF_SIZE];
         store.getBytes("nonces", buffer, RADIOLIB_LORAWAN_NONCES_BUF_SIZE);
         state = node.setBufferNonces(buffer);
 
         if (state == RADIOLIB_ERR_NONE) {
-            // Intentar restaurar sesión desde RTC
             state = node.setBufferSession(LWsession);
 
             if (state == RADIOLIB_ERR_NONE) {
@@ -83,12 +74,10 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
         DEBUG_PRINTLN("No hay nonces guardados - iniciando nuevo join");
     }
 
-    // Si llegamos aquí, necesitamos hacer un nuevo join
     state = RADIOLIB_ERR_NETWORK_NOT_JOINED;
     while (state != RADIOLIB_LORAWAN_NEW_SESSION) {
         state = node.activateOTAA();
 
-        // Guardar nonces en flash si el join fue exitoso
         if (state == RADIOLIB_LORAWAN_NEW_SESSION) {
             uint8_t buffer[RADIOLIB_LORAWAN_NONCES_BUF_SIZE];
             uint8_t *persist = node.getBufferNonces();
@@ -99,7 +88,6 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
             delay(1000); // Pausa para estabilización
             node.setDatarate(3);
 
-            // Variable para controlar el número de intentos
             int rtcAttempts = 0;
             bool rtcUpdated = false;
             const int maxAttempts = 3; // Máximo número de intentos para actualizar RTC
@@ -109,21 +97,18 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
 
                 bool macCommandSuccess = node.sendMacCommandReq(RADIOLIB_LORAWAN_MAC_DEVICE_TIME);
                 if (macCommandSuccess) {
-                    // Enviar mensaje vacío
                     uint8_t fPort = 1;
                     uint8_t downlinkPayload[255];
                     size_t downlinkSize = 0;
 
                     int16_t rxState = node.sendReceive(nullptr, 0, fPort, downlinkPayload, &downlinkSize, true);
                     if (rxState == RADIOLIB_ERR_NONE) {
-                        // Obtener y procesar DeviceTime
                         uint32_t unixEpoch;
                         uint8_t fraction;
                         int16_t dtState = node.getMacDeviceTimeAns(&unixEpoch, &fraction, true);
                         if (dtState == RADIOLIB_ERR_NONE) {
                             DEBUG_PRINTF("DeviceTime recibido: epoch = %lu s, fraction = %u\n", unixEpoch, fraction);
 
-                            // Configurar el RTC interno con el tiempo Unix
                             rtc.setTime(unixEpoch);
                             
                             if (abs((int32_t)rtc.getEpoch() - (int32_t)unixEpoch) < 10) {
@@ -207,17 +192,13 @@ size_t LoRaManager::createDelimitedPayload(
     char* buffer,
     size_t bufferSize
 ) {
-    // Inicializar buffer
     buffer[0] = '\0';
     size_t offset = 0;
 
-    // Formatear batería con hasta 3 decimales
     char batteryStr[16];
     formatFloatTo3Decimals(battery, batteryStr, sizeof(batteryStr));
 
-    // Formato: st|d|vt|ts|sensor1_id,sensor1_type,val1,val2,...|sensor2_id,...
 
-    // Añadir encabezado: st|d|vt|ts
     offset += snprintf(buffer + offset, bufferSize - offset,
                       "%s|%s|%s|%lu",
                       stationId.c_str(),
@@ -225,28 +206,22 @@ size_t LoRaManager::createDelimitedPayload(
                       batteryStr,
                       timestamp);
 
-    // Añadir cada sensor
     for (const auto& reading : readings) {
         if (offset >= bufferSize - 1) break; // Evitar desbordamiento
 
-        // Añadir separador de sensor
         buffer[offset++] = '|';
         buffer[offset] = '\0';
 
-        // Añadir ID y tipo del sensor
         offset += snprintf(buffer + offset, bufferSize - offset,
                           "%s,%d",
                           reading.sensorId,
                           reading.type);
 
-        // Añadir valores
         if (reading.subValues.empty()) {
-            // Un solo valor
             char valStr[16];
             formatFloatTo3Decimals(reading.value, valStr, sizeof(valStr));
             offset += snprintf(buffer + offset, bufferSize - offset, ",%s", valStr);
         } else {
-            // Múltiples valores (subValues)
             for (const auto& sv : reading.subValues) {
                 char valStr[16];
                 formatFloatTo3Decimals(sv.value, valStr, sizeof(valStr));
@@ -276,7 +251,6 @@ void LoRaManager::sendDelimitedPayload(
 {
     char payloadBuffer[LoRa::MAX_PAYLOAD + 1];
 
-    // Buscar el valor de la batería en las lecturas
     float battery = NAN;
     for (const auto& reading : readings) {
         if (reading.type == BATTERY) {
@@ -285,10 +259,8 @@ void LoRaManager::sendDelimitedPayload(
         }
     }
 
-    // Obtener timestamp
     uint32_t timestamp = rtc.getEpoch();
 
-    // Crear payload
     size_t payloadSize = createDelimitedPayload(
         readings,
         deviceId,
@@ -302,7 +274,6 @@ void LoRaManager::sendDelimitedPayload(
     DEBUG_PRINTF("Enviando payload delimitado con tamaño %d bytes\n", payloadSize);
     DEBUG_PRINTLN(payloadBuffer);
 
-    // Enviar
     uint8_t fPort = 1;
     uint8_t downlinkPayload[255];
     size_t downlinkSize = 0;

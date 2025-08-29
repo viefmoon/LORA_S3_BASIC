@@ -94,7 +94,6 @@ namespace LoRa {
     constexpr uint32_t SPI_CLOCK = 1000000;
     constexpr uint16_t MAX_PAYLOAD = 200;
 
-    // Pines del módulo LoRa
     constexpr uint8_t NSS_PIN = 8;
     constexpr uint8_t BUSY_PIN = 13;
     constexpr uint8_t RST_PIN = 12;
@@ -105,8 +104,6 @@ namespace LoRa {
     constexpr const char* DEFAULT_APP_KEY = "1d,fb,69,80,69,d6,a0,7e,5d,bf,29,ba,6b,37,d3,04";
     constexpr const char* DEFAULT_NWK_KEY = "82,91,e9,55,19,ab,c0,6c,86,25,63,68,e7,f4,5a,89";
 
-    // La región se define en main.cpp usando las constantes de RadioLib
-    // Por defecto usamos US915 con subband 2
     constexpr uint8_t SUBBAND = 2;
 }
 
@@ -320,6 +317,5 @@ namespace DefaultConfigs {
 // =========================================================================
 // 9. OPCIONES DE DEPURACIÓN
 // =========================================================================
-// Las macros de depuración se definen en debug.h para evitar conflictos
 
-#endif // CONFIG_H
+#endif

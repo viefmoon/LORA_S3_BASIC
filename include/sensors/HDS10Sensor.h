@@ -27,4 +27,4 @@ private:
     float convertResistanceToHumidity(float resistance);
 };
 
-#endif // HDS10_SENSOR_H
+#endif

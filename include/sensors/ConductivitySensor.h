@@ -29,4 +29,4 @@ private:
     float convertVoltageToConductivity(float voltage, float tempC);
 };
 
-#endif // CONDUCTIVITY_SENSOR_H
+#endif

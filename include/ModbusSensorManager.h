@@ -44,4 +44,4 @@ private:
     static bool readHoldingRegisters(uint8_t address, uint16_t startReg, uint16_t numRegs, uint16_t* outData);
 };
 
-#endif // MODBUS_SENSOR_MANAGER_H
+#endif

@@ -85,4 +85,4 @@ static uint16_t crc16_update(uint16_t crc, uint8_t a)
 }
 
 
-#endif /* _UTIL_CRC16_H_ */
+#endif

@@ -21,15 +21,12 @@
 #include <Adafruit_BME680.h>
 #include <Adafruit_BME280.h>
 
-// Variables y objetos globales declarados en main.cpp
 extern ESP32Time rtc;
 extern SPIClass spiLora;
 extern SPISettings spiAdcSettings;
 extern OneWire oneWire;
 extern DallasTemperature dallasTemp;
 extern SHT31 sht30Sensor;
-extern Adafruit_MAX31865 rtdSensor;
-extern Adafruit_VEML7700 veml7700;
 
 /**
  * @brief Clase que maneja la inicialización y lecturas de todos los sensores
@@ -68,9 +65,8 @@ class SensorManager {
      */
     std::unique_ptr<ISensor> createSensor(const SensorConfig& config);
 
-    // Vector de sensores gestionados
     std::vector<std::unique_ptr<ISensor>> _sensors;
 
 };
 
-#endif // SENSOR_MANAGER_H
+#endif

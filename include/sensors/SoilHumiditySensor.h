@@ -18,4 +18,4 @@ public:
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 };
 
-#endif // SOIL_HUMIDITY_SENSOR_H
+#endif

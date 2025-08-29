@@ -1,5 +1,7 @@
 #include "sensors/CO2Sensor.h"
 
+static SCD4x scd4x(SCD4x_SENSOR_SCD41);
+
 CO2Sensor::CO2Sensor(const std::string& id) {
     this->_id = id;
     this->_type = CO2;
@@ -21,7 +23,6 @@ CO2Sensor::CO2Sensor(const std::string& id) {
         return reading;
     }
 
-    // Iniciar una medición en modo single-shot
     if (!scd4x.measureSingleShot()) {
         reading.value = NAN;
             reading.subValues.push_back({NAN});
@@ -30,13 +31,12 @@ CO2Sensor::CO2Sensor(const std::string& id) {
         return reading;
     }
     uint32_t counter = 0;
-    const uint32_t maxAttempts = 200; // 200 intentos * 50ms = 10 segundos máximo
+    const uint32_t maxAttempts = 200;
 
     while (counter < maxAttempts) {
     delay(50);
     counter++;
     if (scd4x.readMeasurement()) {
-            // Leer los valores medidos
             float co2 = (float)scd4x.getCO2();
     float temp = scd4x.getTemperature();
     float hum = scd4x.getHumidity();
@@ -47,7 +47,6 @@ CO2Sensor::CO2Sensor(const std::string& id) {
         }
     }
 
-    // Si llegamos aquí, hubo timeout
     reading.value = NAN;
     reading.subValues.push_back({NAN});
     reading.subValues.push_back({NAN});

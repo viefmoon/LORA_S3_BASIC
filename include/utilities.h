@@ -14,4 +14,4 @@ bool parseEUIString(const char* euiStr, uint64_t* eui);
  */
 void formatFloatTo3Decimals(float value, char* buffer, size_t bufferSize);
 
-#endif // UTILITIES_H
+#endif

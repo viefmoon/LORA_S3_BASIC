@@ -50,4 +50,4 @@ public:
     static void handleWakeupCause(bool& wokeFromConfigPin);
 };
 
-#endif // SLEEP_MANAGER_H
+#endif

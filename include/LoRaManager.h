@@ -94,4 +94,4 @@ private:
 
 };
 
-#endif // LORA_MANAGER_H
+#endif

@@ -1,4 +1,8 @@
 #include "sensors/SHT40Sensor.h"
+#include <SensirionI2cSht4x.h>
+
+// Objeto local para el sensor SHT40
+static SensirionI2cSht4x sht40Sensor;
 
 SHT40Sensor::SHT40Sensor(const std::string& id) {
     this->_id = id;

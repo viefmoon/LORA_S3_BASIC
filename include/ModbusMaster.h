@@ -45,20 +45,11 @@ Set to 1 to enable debugging features within class:
 #define __MODBUSMASTER_DEBUG_PIN_A__ 4
 #define __MODBUSMASTER_DEBUG_PIN_B__ 5
 
-/* _____STANDARD INCLUDES____________________________________________________ */
-// include types & constants of Wiring core API
 #include "Arduino.h"
 
-/* _____UTILITY MACROS_______________________________________________________ */
-
-/* _____PROJECT INCLUDES_____________________________________________________ */
-// functions to calculate Modbus Application Data Unit CRC
 #include "util/crc16.h"
-
-// functions to manipulate words
 #include "util/word.h"
 
-/* _____CLASS DEFINITIONS____________________________________________________ */
 /**
 Arduino class library for communicating with Modbus slaves over
 RS232/485 (via RTU protocol).
@@ -73,7 +64,6 @@ class ModbusMaster
     void preTransmission(void (*)());
     void postTransmission(void (*)());
 
-    // Modbus exception codes
     /**
     Modbus protocol illegal function exception.
 
@@ -133,7 +123,6 @@ class ModbusMaster
     */
     static const uint8_t ku8MBSlaveDeviceFailure         = 0x04;
 
-    // Class-defined success/exception codes
     /**
     ModbusMaster success.
 
@@ -231,13 +220,11 @@ class ModbusMaster
     uint8_t _u8ResponseBufferIndex;
     uint8_t _u8ResponseBufferLength;
 
-    // Modbus function codes for bit access
     static const uint8_t ku8MBReadCoils                  = 0x01; ///< Modbus function 0x01 Read Coils
     static const uint8_t ku8MBReadDiscreteInputs         = 0x02; ///< Modbus function 0x02 Read Discrete Inputs
     static const uint8_t ku8MBWriteSingleCoil            = 0x05; ///< Modbus function 0x05 Write Single Coil
     static const uint8_t ku8MBWriteMultipleCoils         = 0x0F; ///< Modbus function 0x0F Write Multiple Coils
 
-    // Modbus function codes for 16 bit access
     static const uint8_t ku8MBReadHoldingRegisters       = 0x03; ///< Modbus function 0x03 Read Holding Registers
     static const uint8_t ku8MBReadInputRegisters         = 0x04; ///< Modbus function 0x04 Read Input Registers
     static const uint8_t ku8MBWriteSingleRegister        = 0x06; ///< Modbus function 0x06 Write Single Register
@@ -245,17 +232,12 @@ class ModbusMaster
     static const uint8_t ku8MBMaskWriteRegister          = 0x16; ///< Modbus function 0x16 Mask Write Register
     static const uint8_t ku8MBReadWriteMultipleRegisters = 0x17; ///< Modbus function 0x17 Read Write Multiple Registers
 
-    // Modbus timeout [milliseconds]
     static const uint16_t ku16MBResponseTimeout          = 2000; ///< Modbus timeout [milliseconds]
 
-    // master function that conducts Modbus transactions
     uint8_t ModbusMasterTransaction(uint8_t u8MBFunction);
 
-    // idle callback function; gets called during idle time between TX and RX
     void (*_idle)();
-    // preTransmission callback function; gets called before writing a Modbus message
     void (*_preTransmission)();
-    // postTransmission callback function; gets called after a Modbus message has been sent
     void (*_postTransmission)();
 };
 #endif

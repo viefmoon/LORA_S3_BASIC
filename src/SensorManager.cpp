@@ -14,7 +14,6 @@
 #include <map>
 #include <string>
 
-// Inclusión de todos los sensores concretos
 #include "sensors/SHT30Sensor.h"
 #include "sensors/DS18B20Sensor.h"
 #include "sensors/CO2Sensor.h"
@@ -34,15 +33,11 @@
 #include <Adafruit_BME280.h>
 #include <Adafruit_VEML7700.h>
 
-// Variables externas
 extern Adafruit_BME680 bme680Sensor;
-extern Adafruit_BME280 bme280Sensor;
-extern Adafruit_VEML7700 veml7700;
 
 void SensorManager::registerSensorsFromConfig() {
     _sensors.clear();
 
-    // Registrar siempre el sensor de batería como sensor especial del sistema
     auto batterySensor = std::make_unique<BatterySensor>("BATT");
     _sensors.push_back(std::move(batterySensor));
     DEBUG_PRINTLN("Sensor de batería registrado: BATT");
@@ -142,16 +137,16 @@ void SensorManager::beginAll() {
     }
 
     if (needs3V3Switched) {
-        PowerManager::power3V3On(); // Encender alimentación adicional de 3.3V
+        PowerManager::power3V3On();
         DEBUG_PRINTLN("Alimentación 3.3V adicional activada");
         delay(100);
     }
 
     if (needs12V) {
-        PowerManager::power12VOn(); // Encender alimentación de 12V para Modbus
+        PowerManager::power12VOn();
         DEBUG_PRINTLN("Alimentación 12V activada");
         delay(500);
-        ModbusSensorManager::beginModbus(); // Inicializar comunicación Modbus
+        ModbusSensorManager::beginModbus();
         DEBUG_PRINTLN("Comunicación Modbus iniciada");
     }
 
@@ -211,7 +206,7 @@ void SensorManager::powerDown() {
     }
 
     if (has12V) {
-        ModbusSensorManager::endModbus(); // Terminar comunicación Modbus
+        ModbusSensorManager::endModbus();
         PowerManager::power12VOff();
         DEBUG_PRINTLN("Alimentación 12V apagada");
     }

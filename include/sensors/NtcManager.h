@@ -47,4 +47,4 @@ private:
     static double computeNtcResistanceFromVoltageDivider(double voltage, double vRef, double rFixed, bool ntcTop);
 };
 
-#endif // NTC_MANAGER_H
+#endif

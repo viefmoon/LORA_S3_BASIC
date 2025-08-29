@@ -6,8 +6,6 @@
 #include "config.h"
 #include <Adafruit_BME280.h>
 
-// Variable externa del sensor
-extern Adafruit_BME280 bme280Sensor;
 
 class BME280Sensor : public ISensor {
 public:
@@ -21,4 +19,4 @@ public:
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 };
 
-#endif // BME280_SENSOR_H
+#endif

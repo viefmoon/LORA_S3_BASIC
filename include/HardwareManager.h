@@ -32,13 +32,11 @@ public:
     static void initializeBus(CommunicationProtocol protocol);
 
     /**
-     * @brief Inicializa el hardware básico del sistema (GPIO, I2C, SPI, etc.) - Compatibilidad
+     * @brief Inicializa el hardware básico del sistema (GPIO, I2C, SPI, etc.)
      * @param spiLora Referencia al bus SPI para el módulo LoRa
-     * @param enabledNormalSensors Vector de sensores habilitados en la configuración
      * @return true si la inicialización fue exitosa, false en caso contrario
      */
-    static bool initHardware(SPIClass& spiLora,
-                           const std::vector<SensorConfig>& enabledNormalSensors);
+    static bool initHardware(SPIClass& spiLora);
 
     /**
      * @brief Inicializa los pines CS/SS para los dispositivos SPI
@@ -53,4 +51,4 @@ private:
     static bool spiInitialized;
 };
 
-#endif // HARDWARE_MANAGER_H
+#endif

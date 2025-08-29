@@ -1,12 +1,10 @@
 #include "PowerManager.h"
-#include "config.h" // Para todas las constantes de configuración
+#include "config.h"
 
 void PowerManager::begin() {
-    // Configurar pines como salidas
     pinMode(Pins::POWER_3V3, OUTPUT);
     pinMode(Pins::POWER_12V, OUTPUT);
 
-    // Asegurar que todas las fuentes están apagadas al inicio
     allPowerOff();
 }
 

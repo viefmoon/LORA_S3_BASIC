@@ -22,7 +22,6 @@ public:
     CommunicationProtocol getProtocol() const override { return CommunicationProtocol::ANALOG_ADC; }
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 
-    // Métodos estáticos públicos para que otros sensores puedan usar
     static float readNtc10kTemperatureStatic();
 
 private:
@@ -59,4 +58,4 @@ private:
     static double computeNtcResistanceFromVoltageDivider(double voltage, double vRef, double rFixed, bool ntcTop);
 };
 
-#endif // NTC_SENSOR_H
+#endif

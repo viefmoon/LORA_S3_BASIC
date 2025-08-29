@@ -1,5 +1,8 @@
 #include "sensors/BME280Sensor.h"
 
+// Objeto estático del sensor BME280
+static Adafruit_BME280 bme280Sensor;
+
 BME280Sensor::BME280Sensor(const std::string& id) {
     this->_id = id;
     this->_type = BME280;

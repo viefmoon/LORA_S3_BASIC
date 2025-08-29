@@ -3,10 +3,6 @@
 
 #include <Arduino.h>
 #include "sensors/ISensor.h"
-#include <Adafruit_BME680.h>
-
-// Variable externa del sensor
-extern Adafruit_BME680 bme680Sensor;
 
 class BME680Sensor : public ISensor {
 public:
@@ -20,4 +16,4 @@ public:
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 };
 
-#endif // BME680_SENSOR_H
+#endif

@@ -4,74 +4,58 @@
  *******************************************************************************************/
 
 #include "BLE.h"
-#include "config.h"   // Para todas las constantes de configuración
-#include "debug.h"  // Para los mensajes DEBUG_*
+#include "config.h"
+#include "debug.h"
 
-// Inicialización de variables estáticas
 bool BLEHandler::isConnected = false;
 unsigned long BLEHandler::connectionStartTime = 0;
 BLEServer* BLEHandler::pBLEServer = nullptr;
 bool BLEHandler::shouldExitOnDisconnect = false;
 
-// --- INICIO: Declarar variable global externa ---
 extern bool wokeFromConfigPin;
-// --- FIN: Declarar variable global externa ---
 
-// Implementación de los métodos de la clase ServerCallbacks
 void BLEHandler::ServerCallbacks::onConnect(BLEServer* pServer) {
     BLEHandler::isConnected = true;
     BLEHandler::connectionStartTime = millis();
-    BLEHandler::shouldExitOnDisconnect = true; // Establecer que debemos salir al desconectar
+    BLEHandler::shouldExitOnDisconnect = true;
 }
 
 void BLEHandler::ServerCallbacks::onDisconnect(BLEServer* pServer) {
     BLEHandler::isConnected = false;
     pServer->getAdvertising()->start();
-    // No reiniciamos shouldExitOnDisconnect aquí, eso lo manejamos en runConfigLoop
 }
 
-// Implementación de los métodos de BLEHandler
 bool BLEHandler::checkConfigMode() {
     bool enterConfig = false;
     int initialPinState = digitalRead(Pins::CONFIG_PIN);
 
-    // Entrar en modo config si:
-    // 1. Despertamos por el pin Y el pin SIGUE bajo ahora
-    // 2. O si el pin está bajo AHORA (independientemente de cómo despertamos)
     if (initialPinState == LOW) {
         unsigned long startTime = millis();
 
-        // Pequeño delay para debounce básico - crucial para pulsadores mecánicos
         delay(50);        if (digitalRead(Pins::CONFIG_PIN) == LOW) {
             while (digitalRead(Pins::CONFIG_PIN) == LOW) {
                 if (millis() - startTime >= BLE::CONFIG_TRIGGER_TIME_MS) {
                     DEBUG_PRINTLN("INFO: Entrando en modo configuración BLE");
                     enterConfig = true;
-                    break; // Salir del while
+                    break;
                 }
                 delay(10);            }
         }
     }
 
-    // Si decidimos entrar en modo config
     if (enterConfig) {
-        // Reiniciar variables de estado BLE
         isConnected = false;
         shouldExitOnDisconnect = false;
 
-        // Obtener configuración LoRa para el nombre BLE
         LoRaConfig loraConfig = ConfigManager::getLoRaConfig();
         String bleName = BLE::DEVICE_PREFIX + String(loraConfig.devEUI);
 
-        // Inicializar BLE
         BLEDevice::init(bleName.c_str());
         pBLEServer = BLEDevice::createServer();
         pBLEServer->setCallbacks(new ServerCallbacks());
 
-        // Configurar servicio BLE
         BLEService* pService = setupService(pBLEServer);
 
-        // Configurar publicidad BLE
         BLEAdvertising* pAdvertising = BLEDevice::getAdvertising();
         pAdvertising->addServiceUUID(pService->getUUID());
         pAdvertising->setScanResponse(true);
@@ -79,17 +63,15 @@ bool BLEHandler::checkConfigMode() {
         pAdvertising->setMinPreferred(0x12);
         pAdvertising->start();
 
-        // Entrar en bucle de configuración
         runConfigLoop();
         DEBUG_PRINTLN("INFO: Saliendo del modo configuración BLE");
 
-        wokeFromConfigPin = false; // Importante: Resetear el flag después de usarlo
-        return true; // Indicar que entramos (y salimos) del modo config
+        wokeFromConfigPin = false;
+        return true;
     }
 
-    // Si no entramos en modo config, reseteamos el flag por si acaso estaba activo
     wokeFromConfigPin = false;
-    return false; // No se entró en modo config
+    return false;
 }
 
 BLEServer* BLEHandler::initBLE(const String& devEUI) {
@@ -102,36 +84,31 @@ BLEServer* BLEHandler::initBLE(const String& devEUI) {
 
 void BLEHandler::runConfigLoop() {
     unsigned long startTime = millis();
-    const unsigned long timeout = BLE::CONFIG_WAIT_TIMEOUT_MS; // Usar constante de config.h
+    const unsigned long timeout = BLE::CONFIG_WAIT_TIMEOUT_MS;
 
     while (true) {        if (shouldExitOnDisconnect && !isConnected) {
             BLEDevice::getAdvertising()->stop();
-            shouldExitOnDisconnect = false; // Resetear la bandera
+            shouldExitOnDisconnect = false;
             break;
         }
 
-        // Timeout para esperar conexión
         if (millis() - startTime >= timeout && !BLEHandler::isConnected) {
             BLEDevice::getAdvertising()->stop();
             break;
         }
 
-        // Timeout para conexión activa
         if (BLEHandler::isConnected && (millis() - BLEHandler::connectionStartTime >= BLEHandler::connectionTimeout)) {
             if (pBLEServer) {
-                pBLEServer->disconnect(0); // Desconectar todos los clientes
+                pBLEServer->disconnect(0);
                 BLEHandler::isConnected = false;
                 BLEDevice::getAdvertising()->start();
             }
         }
 
-        // Control del LED según estado de conexión
         if (BLEHandler::isConnected) {
-            // Cliente conectado, LED fijo
             digitalWrite(Pins::CONFIG_LED, HIGH);
             delay(1000);
         } else {
-            // Esperando conexión, LED parpadeando
             digitalWrite(Pins::CONFIG_LED, HIGH);
             delay(250);
             digitalWrite(Pins::CONFIG_LED, LOW);
@@ -140,56 +117,45 @@ void BLEHandler::runConfigLoop() {
     }
 }
 
-// Implementación de la configuración del servicio BLE
 BLEService* BLEHandler::setupService(BLEServer* pServer) {
-    // Crear el servicio de configuración utilizando el UUID definido
     BLEService* pService = pServer->createService(BLEUUID(BLE::SERVICE_UUID));
 
-    // Característica del sistema - común para todos los tipos de dispositivo
     BLECharacteristic* pSystemChar = pService->createCharacteristic(
         BLEUUID(BLE::CHAR_SYSTEM_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pSystemChar->setCallbacks(new SystemConfigCallback());
 
-    // Para dispositivo analógico, se utilizan todas las callbacks
-
-    // Característica para configuración NTC 100K
     BLECharacteristic* pNTC100KChar = pService->createCharacteristic(
         BLEUUID(BLE::CHAR_NTC100K_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pNTC100KChar->setCallbacks(new NTC100KConfigCallback());
 
-    // Característica para configuración NTC 10K
     BLECharacteristic* pNTC10KChar = pService->createCharacteristic(
         BLEUUID(BLE::CHAR_NTC10K_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pNTC10KChar->setCallbacks(new NTC10KConfigCallback());
 
-    // Característica para configuración de Conductividad
     BLECharacteristic* pCondChar = pService->createCharacteristic(
         BLEUUID(BLE::CHAR_CONDUCTIVITY_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pCondChar->setCallbacks(new ConductivityConfigCallback());
 
-    // Característica para configuración de pH
     BLECharacteristic* pPHChar = pService->createCharacteristic(
         BLEUUID(BLE::CHAR_PH_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pPHChar->setCallbacks(new PHConfigCallback());
 
-    // Característica para configuración de Sensores
     BLECharacteristic* pSensorsChar = pService->createCharacteristic(
         BLEUUID(BLE::CHAR_SENSORS_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
     );
     pSensorsChar->setCallbacks(new SensorsConfigCallback());
 
-    // Característica para configuración de LoRa - común para todos los tipos
     BLECharacteristic* pLoRaConfigChar = pService->createCharacteristic(
         BLEUUID(BLE::CHAR_LORA_CONFIG_UUID),
         BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE
@@ -200,12 +166,10 @@ BLEService* BLEHandler::setupService(BLEServer* pServer) {
     return pService;
 }
 
-// Implementación de SystemConfigCallback
 void BLEHandler::SystemConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(F("DEBUG: SystemConfigCallback onWrite - JSON recibido:"));
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
 
-    // Se espera un JSON de la forma: { "system": { "initialized": <bool>, "sleep_time": <valor>, "device_id": "<valor>" } }
     StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> doc;
     DeserializationError error = deserializeJson(doc, pCharacteristic->getValue());
     if (error) {
@@ -252,12 +216,10 @@ void BLEHandler::SystemConfigCallback::onRead(BLECharacteristic *pCharacteristic
     pCharacteristic->setValue(jsonString.c_str());
 }
 
-// Implementación de NTC100KConfigCallback
 void BLEHandler::NTC100KConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(F("DEBUG: NTC100KConfigCallback onWrite - JSON recibido:"));
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
 
-    // Se espera un JSON de la forma: { "ntc_100k": { <parámetros> } }
     StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
@@ -307,7 +269,6 @@ void BLEHandler::NTC100KConfigCallback::onRead(BLECharacteristic *pCharacteristi
     DEBUG_PRINTLN(r3);
 
     StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
-    // Crear objeto anidado con el namespace "ntc_100k"
     JsonObject doc = fullDoc.createNestedObject(JsonKeys::NS_NTC100K);
     doc[JsonKeys::KEY_NTC100K_T1] = t1;
     doc[JsonKeys::KEY_NTC100K_R1] = r1;
@@ -323,12 +284,10 @@ void BLEHandler::NTC100KConfigCallback::onRead(BLECharacteristic *pCharacteristi
     pCharacteristic->setValue(jsonString.c_str());
 }
 
-// Implementación de NTC10KConfigCallback
 void BLEHandler::NTC10KConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(F("DEBUG: NTC10KConfigCallback onWrite - JSON recibido:"));
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
 
-    // Se espera JSON: { "ntc_10k": { <parámetros> } }
     StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
@@ -393,7 +352,6 @@ void BLEHandler::NTC10KConfigCallback::onRead(BLECharacteristic *pCharacteristic
     pCharacteristic->setValue(jsonString.c_str());
 }
 
-// Implementación de ConductivityConfigCallback
 void BLEHandler::ConductivityConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(F("DEBUG: ConductivityConfigCallback onWrite - JSON recibido:"));
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
@@ -481,7 +439,6 @@ void BLEHandler::PHConfigCallback::onWrite(BLECharacteristic *pCharacteristic) {
     DEBUG_PRINTLN(F("DEBUG: PHConfigCallback onWrite - JSON recibido:"));
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
 
-    // Se espera JSON: { "ph": { <parámetros> } }
     StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
@@ -627,7 +584,6 @@ void BLEHandler::LoRaConfigCallback::onWrite(BLECharacteristic* pCharacteristic)
     DEBUG_PRINTLN(F("DEBUG: LoRaConfigCallback onWrite - JSON recibido:"));
     DEBUG_PRINTLN(pCharacteristic->getValue().c_str());
 
-    // Se espera JSON: { "lorawan": { <parámetros> } }
     StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     DeserializationError error = deserializeJson(fullDoc, pCharacteristic->getValue());
     if (error) {
@@ -664,7 +620,6 @@ void BLEHandler::LoRaConfigCallback::onRead(BLECharacteristic* pCharacteristic) 
     DEBUG_PRINT(F("nwkKey: "));
     DEBUG_PRINTLN(config.nwkKey);
 
-    // Aumentamos el tamaño del documento para asegurarnos de incluir todas las claves
     StaticJsonDocument<System::JSON_DOC_SIZE_SMALL> fullDoc;
     JsonObject doc = fullDoc.createNestedObject(JsonKeys::NS_LORAWAN);
     doc[JsonKeys::KEY_LORA_JOIN_EUI]     = config.joinEUI;

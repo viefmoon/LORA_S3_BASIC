@@ -25,7 +25,6 @@ protected:
     uint16_t _startRegister;
     uint8_t _numRegisters;
 
-    // Método virtual para procesar datos - ahora retorna un SensorReading completo
     virtual SensorReading processModbusData(uint16_t* data, uint8_t numRegs) = 0;
 };
 
@@ -40,4 +39,4 @@ protected:
     SensorReading processModbusData(uint16_t* data, uint8_t numRegs) override;
 };
 
-#endif // MODBUS_SENSOR_H
+#endif

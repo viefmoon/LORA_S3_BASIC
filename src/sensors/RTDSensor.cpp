@@ -1,4 +1,8 @@
 #include "sensors/RTDSensor.h"
+#include "config.h"
+
+// Objeto estático del sensor RTD con pines configurados
+static Adafruit_MAX31865 rtdSensor(Pins::RtdSPI::PT100_CS, Pins::RtdSPI::MOSI, Pins::RtdSPI::MISO, Pins::RtdSPI::SCK);
 
 RTDSensor::RTDSensor(const std::string& id) {
     this->_id = id;

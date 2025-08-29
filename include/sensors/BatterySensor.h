@@ -35,4 +35,4 @@ private:
     float calculateBatteryVoltage(float adcVoltage);
 };
 
-#endif // BATTERY_SENSOR_H
+#endif

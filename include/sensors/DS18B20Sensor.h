@@ -5,9 +5,6 @@
 #include "sensors/ISensor.h"
 #include "config.h"
 #include "debug.h"
-#include <DallasTemperature.h>
-
-extern DallasTemperature dallasTemp;
 
 class DS18B20Sensor : public ISensor {
 public:    explicit DS18B20Sensor(const std::string& id);
@@ -20,4 +17,4 @@ public:    explicit DS18B20Sensor(const std::string& id);
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 };
 
-#endif // DS18B20_SENSOR_H
+#endif

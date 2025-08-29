@@ -102,5 +102,3 @@ private:
   TwoWire* _wire;
 };
 
-//  -- END OF FILE --
-

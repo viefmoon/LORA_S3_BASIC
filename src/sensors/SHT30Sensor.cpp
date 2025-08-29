@@ -1,4 +1,8 @@
 #include "sensors/SHT30Sensor.h"
+#include "SHT31.h"
+
+// Objeto local para el sensor SHT30
+static SHT31 sht30Sensor(Sensors::SHT31_I2C_ADDR, &Wire);
 
 SHT30Sensor::SHT30Sensor(const std::string& id) {
     this->_id = id;

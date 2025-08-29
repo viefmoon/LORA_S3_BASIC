@@ -5,8 +5,6 @@
 #include "sensors/ISensor.h"
 #include <Adafruit_VEML7700.h>
 
-// Variable externa del sensor
-extern Adafruit_VEML7700 veml7700;
 
 class VEML7700Sensor : public ISensor {
 public:
@@ -20,4 +18,4 @@ public:
     PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 };
 
-#endif // VEML7700_SENSOR_H
+#endif

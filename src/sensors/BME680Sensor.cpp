@@ -1,4 +1,8 @@
 #include "sensors/BME680Sensor.h"
+#include <Adafruit_BME680.h>
+
+// Objeto local para el sensor BME680
+static Adafruit_BME680 bme680Sensor(&Wire);
 
 BME680Sensor::BME680Sensor(const std::string& id) {
     this->_id = id;
