@@ -46,6 +46,53 @@ bool ConfigManager::checkInitialized() {
     return doc[JsonKeys::KEY_INITIALIZED] | false;
 }
 
+void ConfigManager::clearAllPreferences() {
+    Preferences prefs;
+    
+    // Borrar todos los namespaces utilizados en el sistema
+    prefs.begin(JsonKeys::NS_SYSTEM, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_SENSORS, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_LORAWAN, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_LORA_SESSION, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_SENSORS_MODBUS, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_SENSORS_ADC, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_NTC100K, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_NTC10K, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_COND, false);
+    prefs.clear();
+    prefs.end();
+    
+    prefs.begin(JsonKeys::NS_PH, false);
+    prefs.clear();
+    prefs.end();
+    
+    Serial.println("=== MEMORIA FLASH BORRADA COMPLETAMENTE ===");
+}
+
 void ConfigManager::initializeDefaultConfig() {
     /* -------------------------------------------------------------------------
        1. INICIALIZACIÓN DE CONFIGURACIÓN DEL SISTEMA

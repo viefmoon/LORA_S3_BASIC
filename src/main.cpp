@@ -68,10 +68,16 @@ SensorManager sensorManager;
 bool initHardware() {
     SleepManager::releaseHeldPins();
 
+    //DESCOMENTAR LA SIGUIENTE LÍNEA PARA BORRAR TODA LA MEMORIA FLASH Y REINICIALIZAR
+    //ConfigManager::clearAllPreferences();
+
     if (!ConfigManager::checkInitialized()) {
+        DEBUG_PRINTLN("Creando configuración por defecto...");
         ConfigManager::initializeDefaultConfig();
     }
     ConfigManager::getSystemConfig(systemInitialized, timeToSleep, deviceId, stationId);
+    DEBUG_PRINTF("Config: Device=%s, Station=%s, Sleep=%ds\n", 
+                 deviceId.c_str(), stationId.c_str(), timeToSleep);
 
     if (!HardwareManager::initHardware(spiLora)) {
         return false;
@@ -84,7 +90,6 @@ bool initHardware() {
 
     sensorManager.registerSensorsFromConfig();
     sensorManager.beginAll();
-    DEBUG_PRINTLN("Tiempo después de iniciar sensores: " + String(millis() - setupStartTime));
 
     return true;
 }
@@ -134,6 +139,9 @@ void sendData() {
 void setup() {
     setupStartTime = millis();
     DEBUG_BEGIN(System::SERIAL_BAUD_RATE);
+    delay(100); // Pequeño delay para asegurar que Serial esté listo
+    
+    DEBUG_PRINTLN("\n=== INICIANDO SISTEMA ===");
 
     SleepManager::handleWakeupCause(wokeFromConfigPin);
 

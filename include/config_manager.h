@@ -22,6 +22,7 @@ public:
     // Verificación e inicialización
     static bool checkInitialized();
     static void initializeDefaultConfig();
+    static void clearAllPreferences();
 
     // Configuración del sistema
     static void getSystemConfig(bool &initialized, uint32_t &sleepTime, String &deviceId, String &stationId);

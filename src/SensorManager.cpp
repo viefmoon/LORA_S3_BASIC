@@ -40,7 +40,6 @@ void SensorManager::registerSensorsFromConfig() {
 
     auto batterySensor = std::make_unique<BatterySensor>("BATT");
     _sensors.push_back(std::move(batterySensor));
-    DEBUG_PRINTLN("Sensor de batería registrado: BATT");
 
     auto normalConfigs = ConfigManager::getEnabledSensorConfigs();
     for (const auto& config : normalConfigs) {
@@ -154,10 +153,9 @@ void SensorManager::beginAll() {
         HardwareManager::initializeBus(sensor->getProtocol());
 
         bool success = sensor->begin();
-        DEBUG_PRINTF("Sensor %s inicializado: %s (Power: %d)\n",
-                    sensor->getId().c_str(),
-                    success ? "OK" : "FALLO",
-                    static_cast<int>(sensor->getPowerRequirement()));
+        if (!success) {
+            DEBUG_PRINTF("ERROR: Sensor %s falló al inicializar\n", sensor->getId().c_str());
+        }
     }
 }
 

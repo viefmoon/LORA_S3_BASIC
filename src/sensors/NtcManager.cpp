@@ -69,11 +69,8 @@ return Rntc;
     double A=0, B=0, C=0;
     calculateSteinhartHartCoeffs(T1K, r1, T2K, r2, T3K, r3, A, B, C);
     int ntcPin = -1;
-    if (strcmp(configKey, "0") == 0) {
-    ntcPin = Pins::NTC100K_0;
-    }
-    else if (strcmp(configKey, "1") == 0) {
-    ntcPin = Pins::NTC100K_1;
+    if (strcmp(configKey, "0") == 0 || strcmp(configKey, "1") == 0) {
+    ntcPin = Pins::NTC100K;
     } else {
         // Si no coincide con ninguna configuración, retornamos NAN
         return NAN;

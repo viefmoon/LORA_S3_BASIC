@@ -47,11 +47,8 @@ float NtcSensor::readNtc100kTemperature() {
     calculateSteinhartHartCoeffs(T1K, r1, T2K, r2, T3K, r3, A, B, C);
     
     int ntcPin = -1;
-    if (strcmp(_configKey, "0") == 0) {
-        ntcPin = Pins::NTC100K_0;
-    }
-    else if (strcmp(_configKey, "1") == 0) {
-        ntcPin = Pins::NTC100K_1;
+    if (strcmp(_configKey, "0") == 0 || strcmp(_configKey, "1") == 0) {
+        ntcPin = Pins::NTC100K;
     } else {
         return NAN;
     }

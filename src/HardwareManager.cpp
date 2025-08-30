@@ -31,20 +31,17 @@ void HardwareManager::initializeBus(CommunicationProtocol protocol) {
             if (!i2cInitialized) {
                 Wire.begin(Pins::I2C_SDA, Pins::I2C_SCL);
                 i2cInitialized = true;
-                DEBUG_PRINTLN("I2C bus initialized");
             }
             break;
         case CommunicationProtocol::ONE_WIRE:
             if (!oneWireInitialized) {
                 oneWireInitialized = true;
-                DEBUG_PRINTLN("OneWire bus initialized");
             }
             break;
         case CommunicationProtocol::MODBUS:
             if (!modbusInitialized) {
                 ModbusSensorManager::beginModbus();
                 modbusInitialized = true;
-                DEBUG_PRINTLN("Modbus initialized");
             }
             break;
         case CommunicationProtocol::ANALOG_ADC:
@@ -52,13 +49,11 @@ void HardwareManager::initializeBus(CommunicationProtocol protocol) {
                 analogReadResolution(13);
                 analogSetAttenuation(ADC_11db);
                 analogInitialized = true;
-                DEBUG_PRINTLN("Analog ADC initialized");
             }
             break;
         case CommunicationProtocol::SPI:
             if (!spiInitialized) {
                 spiInitialized = true;
-                DEBUG_PRINTLN("SPI bus initialized");
             }
             break;
         default:

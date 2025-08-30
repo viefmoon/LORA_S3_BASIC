@@ -41,8 +41,7 @@ namespace Pins {
     constexpr uint8_t BATTERY_CONTROL = 37;
 
     // Pines analógicos para sensores
-    constexpr uint8_t NTC100K_0 = 3;
-    constexpr uint8_t NTC100K_1 = 5;
+    constexpr uint8_t NTC100K = 5;
     constexpr uint8_t NTC10K = 6;
     constexpr uint8_t PH_SENSOR = 17;
     constexpr uint8_t COND_SENSOR = 20;
@@ -70,10 +69,10 @@ namespace Pins {
     }
 
     // Configuración y LEDs
-    constexpr uint8_t CONFIG_PIN = 2;
+    constexpr uint8_t CONFIG_PIN = 3;
     constexpr uint8_t CONFIG_LED = 35;
-    constexpr uint8_t LED1 = 33;
-    constexpr uint8_t LED2 = 34;
+    constexpr uint8_t LED1 = 21;
+    constexpr uint8_t LED2 = 19;
 
     // Flow sensor
     constexpr uint8_t FLOW_SENSOR = 4;
@@ -94,10 +93,11 @@ namespace LoRa {
     constexpr uint32_t SPI_CLOCK = 1000000;
     constexpr uint16_t MAX_PAYLOAD = 200;
 
-    constexpr uint8_t NSS_PIN = 8;
-    constexpr uint8_t BUSY_PIN = 13;
-    constexpr uint8_t RST_PIN = 12;
-    constexpr uint8_t DIO1_PIN = 14;
+    // Usar pines definidos en ::Pins::LoRaSPI
+    constexpr uint8_t NSS_PIN = ::Pins::LoRaSPI::NSS;
+    constexpr uint8_t BUSY_PIN = ::Pins::LoRaSPI::BUSY;
+    constexpr uint8_t RST_PIN = ::Pins::LoRaSPI::RST;
+    constexpr uint8_t DIO1_PIN = ::Pins::LoRaSPI::DIO1;
 
     constexpr const char* DEFAULT_JOIN_EUI = "00,00,00,00,00,00,00,00";
     constexpr const char* DEFAULT_DEV_EUI = "1f,d4,e6,68,46,8c,e1,b7";
@@ -287,14 +287,14 @@ namespace Calibration {
 // =========================================================================
 // 8. CONFIGURACIONES POR DEFECTO DE SENSORES
 // =========================================================================
-namespace DefaultConfigs {
+namespace DEFAULT_CONFIGS {
     #define DEFAULT_SENSOR_CONFIGS { \
-        {"B6", "BM6_1", BME680, true}, \
+        {"B6", "BM6_1", BME680, false}, \
         {"C", "CO2_1", CO2, false}, \
-        {"B2", "BM2_1", BME280, true}, \
+        {"B2", "BM2_1", BME280, false}, \
         {"L", "LUX1", VEML7700, false}, \
-        {"SH4", "SH4_1", SHT40, true}, \
-        {"R", "RTD_1",  RTD, true}, \
+        {"SH4", "SH4_1", SHT40, false}, \
+        {"R", "RTD_1",  RTD, false}, \
         {"D", "DS_1",   DS18B20, false}, \
         {"SH3", "SH3_1", SHT30, false} \
     }
@@ -304,8 +304,7 @@ namespace DefaultConfigs {
     }
 
     #define DEFAULT_ADC_SENSOR_CONFIGS { \
-        {"0", "NTC1",  N100K, true}, \
-        {"1", "NTC2",  N100K, true}, \
+        {"0", "NTC1",  N100K, false}, \
         {"2", "NTC3",  N10K, false}, \
         {"3", "HDS10", HDS10, false}, \
         {"4", "COND",  COND, false}, \
@@ -317,5 +316,6 @@ namespace DefaultConfigs {
 // =========================================================================
 // 9. OPCIONES DE DEPURACIÓN
 // =========================================================================
+#define DEBUG_ENABLED  // Comentar esta línea para desactivar los mensajes de depuración
 
 #endif
