@@ -55,8 +55,6 @@ SX1262 radio = new Module(Pins::LoRaSPI::NSS, Pins::LoRaSPI::DIO1, Pins::LoRaSPI
 LoRaWANNode node(&radio, &Region, subBand);
 RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 
-
-
 std::vector<SensorReading> normalReadings;
 
 SensorManager sensorManager;
@@ -76,7 +74,7 @@ bool initHardware() {
         ConfigManager::initializeDefaultConfig();
     }
     ConfigManager::getSystemConfig(systemInitialized, timeToSleep, deviceId, stationId);
-    DEBUG_PRINTF("Config: Device=%s, Station=%s, Sleep=%ds\n", 
+    DEBUG_PRINTF("Config: Device=%s, Station=%s, Sleep=%ds\n",
                  deviceId.c_str(), stationId.c_str(), timeToSleep);
 
     if (!HardwareManager::initHardware(spiLora)) {
@@ -139,9 +137,6 @@ void sendData() {
 void setup() {
     setupStartTime = millis();
     DEBUG_BEGIN(System::SERIAL_BAUD_RATE);
-    delay(100); // Pequeño delay para asegurar que Serial esté listo
-    
-    DEBUG_PRINTLN("\n=== INICIANDO SISTEMA ===");
 
     SleepManager::handleWakeupCause(wokeFromConfigPin);
 
@@ -165,8 +160,5 @@ void loop() {
 
     readSensors();
     sendData();
-
-    delay(10);
-
     SleepManager::goToDeepSleep(timeToSleep, &radio, node, LWsession, spiLora);
 }

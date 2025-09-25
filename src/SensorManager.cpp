@@ -28,6 +28,7 @@
 #include "sensors/HDS10Sensor.h"
 #include "sensors/SoilHumiditySensor.h"
 #include "sensors/RTDSensor.h"
+#include "sensors/MT05Sensor.h"
 #include "sensors/ModbusSensor.h"
 #include <Adafruit_BME680.h>
 #include <Adafruit_BME280.h>
@@ -109,6 +110,8 @@ std::unique_ptr<ISensor> SensorManager::createSensor(const SensorConfig& config)
             return std::make_unique<SoilHumiditySensor>(config.sensorId);
         case RTD:
             return std::make_unique<RTDSensor>(config.sensorId);
+        case MT05S:
+            return std::make_unique<MT05Sensor>(config.sensorId);
         default:
             DEBUG_PRINTF("Tipo de sensor no reconocido: %d\n", config.type);
             return nullptr;
@@ -137,16 +140,11 @@ void SensorManager::beginAll() {
 
     if (needs3V3Switched) {
         PowerManager::power3V3On();
-        DEBUG_PRINTLN("Alimentación 3.3V adicional activada");
-        delay(100);
     }
 
     if (needs12V) {
         PowerManager::power12VOn();
-        DEBUG_PRINTLN("Alimentación 12V activada");
-        delay(500);
         ModbusSensorManager::beginModbus();
-        DEBUG_PRINTLN("Comunicación Modbus iniciada");
     }
 
     for (const auto& sensor : _sensors) {

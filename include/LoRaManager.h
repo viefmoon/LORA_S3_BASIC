@@ -20,6 +20,12 @@
 // Código de error personalizado para fallo en sincronización RTC
 #define RADIOLIB_ERR_RTC_SYNC_FAILED -5000
 
+// Código de estado normal de LoRaWAN (NO es un error)
+// Indica transmisión exitosa sin mensaje downlink del servidor
+#ifndef RADIOLIB_LORAWAN_NO_DOWNLINK
+#define RADIOLIB_LORAWAN_NO_DOWNLINK -1116
+#endif
+
 class LoRaManager {
 public:
     /**

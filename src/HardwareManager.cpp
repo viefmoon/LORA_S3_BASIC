@@ -7,6 +7,7 @@
 #include "debug.h"
 #include "ModbusSensorManager.h"
 #include "SensorManager.h"
+#include "driver/gpio.h"
 
 bool HardwareManager::i2cInitialized = false;
 bool HardwareManager::oneWireInitialized = false;
@@ -15,7 +16,6 @@ bool HardwareManager::analogInitialized = false;
 bool HardwareManager::spiInitialized = false;
 
 void HardwareManager::initialize() {
-    pinMode(Pins::ONE_WIRE_BUS, INPUT_PULLUP);
 
     pinMode(Pins::BATTERY_CONTROL, OUTPUT);
     digitalWrite(Pins::BATTERY_CONTROL, HIGH);

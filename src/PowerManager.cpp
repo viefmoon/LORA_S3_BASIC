@@ -1,5 +1,6 @@
 #include "PowerManager.h"
 #include "config.h"
+#include "debug.h"
 
 void PowerManager::begin() {
     pinMode(Pins::POWER_3V3, OUTPUT);

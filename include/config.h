@@ -29,7 +29,7 @@ namespace System {
 // =========================================================================
 namespace Pins {
     // Buses
-    constexpr uint8_t ONE_WIRE_BUS = 38;
+    constexpr uint8_t ONE_WIRE_BUS = 33;
     constexpr uint8_t I2C_SDA = 48;
     constexpr uint8_t I2C_SCL = 47;
 
@@ -79,7 +79,7 @@ namespace Pins {
 
     // Power
     constexpr uint8_t POWER_3V3 = 36;
-    constexpr uint8_t POWER_12V = 19;
+    constexpr uint8_t POWER_12V = 38;
 
     // Modbus
     constexpr uint8_t MODBUS_RX = 21;
@@ -100,9 +100,9 @@ namespace LoRa {
     constexpr uint8_t DIO1_PIN = ::Pins::LoRaSPI::DIO1;
 
     constexpr const char* DEFAULT_JOIN_EUI = "00,00,00,00,00,00,00,00";
-    constexpr const char* DEFAULT_DEV_EUI = "1f,d4,e6,68,46,8c,e1,b7";
-    constexpr const char* DEFAULT_APP_KEY = "1d,fb,69,80,69,d6,a0,7e,5d,bf,29,ba,6b,37,d3,04";
-    constexpr const char* DEFAULT_NWK_KEY = "82,91,e9,55,19,ab,c0,6c,86,25,63,68,e7,f4,5a,89";
+    constexpr const char* DEFAULT_DEV_EUI = "63,66,e0,dc,66,04,2c,0d";
+    constexpr const char* DEFAULT_APP_KEY = "98,28,42,10,47,6b,15,e4,a2,78,7c,5f,9e,23,80,ec";
+    constexpr const char* DEFAULT_NWK_KEY = "3f,1e,71,0e,44,33,8d,f8,8c,41,d3,f2,d3,72,a0,d0";
 
     constexpr uint8_t SUBBAND = 2;
 }
@@ -228,7 +228,7 @@ namespace Sensors {
     constexpr float NTC_TEMP_MAX = 100.0f;
 
     // Tiempos
-    constexpr uint8_t POWER_STABILIZE_DELAY_MS = 1;
+    constexpr uint8_t POWER_STABILIZE_DELAY_MS = 100;
 }
 
 // =========================================================================
@@ -296,7 +296,8 @@ namespace DEFAULT_CONFIGS {
         {"SH4", "SH4_1", SHT40, false}, \
         {"R", "RTD_1",  RTD, false}, \
         {"D", "DS_1",   DS18B20, false}, \
-        {"SH3", "SH3_1", SHT30, false} \
+        {"SH3", "SH3_1", SHT30, false}, \
+        {"MT05", "MT05_1", MT05S, true} \
     }
 
     #define DEFAULT_MODBUS_SENSOR_CONFIGS { \

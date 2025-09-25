@@ -2,9 +2,8 @@
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
-// Objetos locales para el sensor DS18B20
-static OneWire oneWire(Pins::ONE_WIRE_BUS);
-static DallasTemperature dallasTemp(&oneWire);
+OneWire oneWireBus(Pins::ONE_WIRE_BUS);
+static DallasTemperature dallasTemp(&oneWireBus);
 
 DS18B20Sensor::DS18B20Sensor(const std::string& id) {
     this->_id = id;

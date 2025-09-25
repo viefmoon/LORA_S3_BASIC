@@ -287,12 +287,20 @@ void LoRaManager::sendDelimitedPayload(
     );
 
     if (state == RADIOLIB_ERR_NONE) {
-        DEBUG_PRINTLN("Transmisión exitosa!");
+        DEBUG_PRINTLN("Transmisión exitosa con downlink!");
         if (downlinkSize > 0) {
             DEBUG_PRINTF("Recibidos %d bytes de downlink\n", downlinkSize);
         }
+    } else if (state == RADIOLIB_LORAWAN_NO_DOWNLINK) {
+        // -1116: No es un error, significa transmisión exitosa sin downlink
+        DEBUG_PRINTLN("Transmisión exitosa (sin downlink)");
     } else {
         DEBUG_PRINTF("Error en transmisión: %d\n", state);
+
+        // Si es error de frecuencia, intentar reinicializar el radio
+        if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {
+            DEBUG_PRINTLN("Error de frecuencia detectado - reinicialización requerida");
+        }
     }
 }
 

@@ -140,7 +140,6 @@ void SleepManager::handleWakeupCause(bool& wokeFromConfigPin) {
     if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT0) {
         DEBUG_PRINTLN("INFO: Despertado por EXT0 (CONFIG_PIN)");
         wokeFromConfigPin = true;
-        // Pequeño delay para estabilizar/debounce inicial
         delay(50);
     } else if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
         DEBUG_PRINTLN("INFO: Despertado por Timer");
