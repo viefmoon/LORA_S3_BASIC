@@ -55,6 +55,16 @@ SX1262 radio = new Module(Pins::LoRaSPI::NSS, Pins::LoRaSPI::DIO1, Pins::LoRaSPI
 LoRaWANNode node(&radio, &Region, subBand);
 RTC_DATA_ATTR uint8_t LWsession[RADIOLIB_LORAWAN_SESSION_BUF_SIZE];
 
+// Cachear configuraci\u00f3n en RTC RAM para evitar lecturas de NVS cada wake
+RTC_DATA_ATTR bool configCached = false;
+RTC_DATA_ATTR uint32_t cachedTimeToSleep = 0;
+RTC_DATA_ATTR char cachedDeviceId[32] = {0};
+RTC_DATA_ATTR char cachedStationId[32] = {0};
+
+// Track de inicializaci\u00f3n de hardware para optimizar wakeups
+RTC_DATA_ATTR bool hardwareInitialized = false;
+RTC_DATA_ATTR uint32_t wakeupCount = 0;
+
 std::vector<SensorReading> normalReadings;
 
 SensorManager sensorManager;
@@ -69,11 +79,30 @@ bool initHardware() {
     //DESCOMENTAR LA SIGUIENTE LÍNEA PARA BORRAR TODA LA MEMORIA FLASH Y REINICIALIZAR
     //ConfigManager::clearAllPreferences();
 
-    if (!ConfigManager::checkInitialized()) {
-        DEBUG_PRINTLN("Creando configuración por defecto...");
-        ConfigManager::initializeDefaultConfig();
+    // Usar configuración cacheada si está disponible
+    if (configCached) {
+        // Usar valores cacheados en RTC RAM (mucho más rápido)
+        timeToSleep = cachedTimeToSleep;
+        deviceId = String(cachedDeviceId);
+        stationId = String(cachedStationId);
+        systemInitialized = true;
+        DEBUG_PRINTLN("Usando configuración cacheada de RTC RAM");
+    } else {
+        // Primera vez o después de power-on reset - leer de NVS
+        if (!ConfigManager::checkInitialized()) {
+            DEBUG_PRINTLN("Creando configuración por defecto...");
+            ConfigManager::initializeDefaultConfig();
+        }
+        ConfigManager::getSystemConfig(systemInitialized, timeToSleep, deviceId, stationId);
+
+        // Cachear en RTC RAM para próximos wakeups
+        cachedTimeToSleep = timeToSleep;
+        strncpy(cachedDeviceId, deviceId.c_str(), sizeof(cachedDeviceId) - 1);
+        strncpy(cachedStationId, stationId.c_str(), sizeof(cachedStationId) - 1);
+        configCached = true;
+        DEBUG_PRINTLN("Configuración cacheada en RTC RAM");
     }
-    ConfigManager::getSystemConfig(systemInitialized, timeToSleep, deviceId, stationId);
+
     DEBUG_PRINTF("Config: Device=%s, Station=%s, Sleep=%ds\n",
                  deviceId.c_str(), stationId.c_str(), timeToSleep);
 
@@ -138,7 +167,17 @@ void setup() {
     setupStartTime = millis();
     DEBUG_BEGIN(System::SERIAL_BAUD_RATE);
 
+    // Incrementar contador de wakeups
+    wakeupCount++;
+    DEBUG_PRINTF("Wakeup #%lu\n", wakeupCount);
+
     SleepManager::handleWakeupCause(wokeFromConfigPin);
+
+    // Si se despert\u00f3 por CONFIG_PIN, resetear inicializaci\u00f3n
+    if (wokeFromConfigPin) {
+        hardwareInitialized = false;
+        configCached = false;
+    }
 
     if (!initHardware()) {
         SleepManager::goToDeepSleep(timeToSleep, &radio, node, LWsession, spiLora);

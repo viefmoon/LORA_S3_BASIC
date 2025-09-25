@@ -8,7 +8,6 @@ MT05Sensor::MT05Sensor(const std::string& id) {
 
 bool MT05Sensor::begin() {
     _initialized = true;
-    _hasAddress = true;
     return true;
 }
 
@@ -41,14 +40,13 @@ SensorReading MT05Sensor::read() {
     ds.write(0x00);  // CONFIG1: Por defecto
     ds.write(0x00);  // Dummy byte requerido por el protocolo
     delay(10);
-
     // Iniciar conversión de todas las mediciones
     ds.reset();
     ds.skip();
     ds.write(0x44);  // Convert T
 
-    // Esperar a que complete la conversión (típicamente 80-100ms)
-    delay(100);
+    // Esperar conversión completa (100ms típico según datasheet)
+    delay(110);
 
     // Leer los resultados
     ds.reset();
@@ -60,12 +58,13 @@ SensorReading MT05Sensor::read() {
         scratchpad[i] = ds.read();
     }
 
-    // Debug del scratchpad
+    #ifdef DEBUG_MODE
     DEBUG_PRINT("MT05S Scratchpad: ");
     for (int i = 0; i < 9; i++) {
         DEBUG_PRINTF("%02X ", scratchpad[i]);
     }
     DEBUG_PRINTLN("");
+    #endif
 
     // Verificar integridad de datos con CRC
     if (OneWire::crc8(scratchpad, 8) != scratchpad[8]) {
@@ -77,6 +76,8 @@ SensorReading MT05Sensor::read() {
         reading.subValues.push_back(temp);
         reading.subValues.push_back(humidity);
         reading.subValues.push_back(conductivity);
+        // Reset final para forzar standby inmediato
+        ds.reset();
         return reading;
     }
 
@@ -97,6 +98,10 @@ SensorReading MT05Sensor::read() {
 
     DEBUG_PRINTF("MT05S: T=%.2f°C, H=%.2f%%, C=%d µS/cm\n",
                  temp.value, humidity.value, (int)conductivityVal.value);
+
+    // Reset final para forzar al sensor a standby inmediato
+    // Esto evita el timeout de 500ms esperando el siguiente comando
+    ds.reset();
 
     return reading;
 }

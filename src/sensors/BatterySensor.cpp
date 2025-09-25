@@ -21,7 +21,6 @@ BatterySensor::BatterySensor(const std::string& id) {
         return reading;
     }
     digitalWrite(Pins::BATTERY_CONTROL, LOW);
-    delay(10);
     int milliVolts = analogReadMilliVolts(Pins::BATTERY_SENSOR);
     digitalWrite(Pins::BATTERY_CONTROL, HIGH);
     float voltage = milliVolts / 1000.0f;

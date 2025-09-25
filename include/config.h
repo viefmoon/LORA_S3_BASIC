@@ -228,7 +228,7 @@ namespace Sensors {
     constexpr float NTC_TEMP_MAX = 100.0f;
 
     // Tiempos
-    constexpr uint8_t POWER_STABILIZE_DELAY_MS = 100;
+    constexpr uint16_t POWER_STABILIZE_DELAY_MS = 20; 
 }
 
 // =========================================================================

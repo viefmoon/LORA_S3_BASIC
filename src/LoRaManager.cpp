@@ -278,22 +278,22 @@ void LoRaManager::sendDelimitedPayload(
     uint8_t downlinkPayload[255];
     size_t downlinkSize = 0;
 
-    int16_t state = node.sendReceive(
+    // Log del tiempo transcurrido antes del envío LoRa
+    extern unsigned long setupStartTime;
+    unsigned long elapsedTime = millis() - setupStartTime;
+    DEBUG_PRINTF("Tiempo transcurrido antes del envío LoRa: %lu ms\n", elapsedTime);
+
+    // Usar uplink() en lugar de sendReceive() para NO esperar ventanas RX
+    // Esto reduce significativamente el tiempo de transmisión
+    int16_t state = node.uplink(
         (uint8_t*)payloadBuffer,
         payloadSize,
         fPort,
-        downlinkPayload,
-        &downlinkSize
+        false  // unconfirmed message
     );
 
     if (state == RADIOLIB_ERR_NONE) {
-        DEBUG_PRINTLN("Transmisión exitosa con downlink!");
-        if (downlinkSize > 0) {
-            DEBUG_PRINTF("Recibidos %d bytes de downlink\n", downlinkSize);
-        }
-    } else if (state == RADIOLIB_LORAWAN_NO_DOWNLINK) {
-        // -1116: No es un error, significa transmisión exitosa sin downlink
-        DEBUG_PRINTLN("Transmisión exitosa (sin downlink)");
+        DEBUG_PRINTLN("Transmisión exitosa (sin esperar downlink)");
     } else {
         DEBUG_PRINTF("Error en transmisión: %d\n", state);
 

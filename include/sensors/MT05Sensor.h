@@ -56,11 +56,9 @@ public:
     /**
      * @brief Obtiene los requerimientos de alimentación
      */
-    PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_MAIN; }
+    PowerRequirement getPowerRequirement() const override { return PowerRequirement::POWER_3V3_SWITCHED; }
 
 private:
-    uint8_t _addr[8];        // Dirección ROM del sensor (no utilizada en modo Skip ROM)
-    bool _hasAddress = false; // Indica si se tiene una dirección específica
 };
 
 #endif
