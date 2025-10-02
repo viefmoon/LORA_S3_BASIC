@@ -66,6 +66,18 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
                 if (state == RADIOLIB_LORAWAN_SESSION_RESTORED) {
                     store.end();
                     DEBUG_PRINTLN("Sesión LoRaWAN restaurada");
+
+                    // IMPORTANTE: Deshabilitar ADR para evitar que el servidor cambie el DR
+                    node.setADR(false);
+                    DEBUG_PRINTLN("ADR deshabilitado - manteniendo DR fijo");
+
+                    // Forzar DR3 después de restaurar sesión
+                    node.setDatarate(LoRa::DEFAULT_DATARATE);
+                    DEBUG_PRINTF("Data Rate forzado a DR%d (SF7BW125)\n", LoRa::DEFAULT_DATARATE);
+
+                    // Configurar dwell time para US915 (400ms límite)
+                    node.setDwellTime(true, 400);
+
                     return state;
                 }
             }
@@ -86,7 +98,8 @@ int16_t LoRaManager::lwActivate(LoRaWANNode& node) {
 
             // Solicitar DeviceTime después de un join exitoso
             delay(1000); // Pausa para estabilización
-            node.setDatarate(3);
+            node.setADR(false);
+            node.setDatarate(LoRa::DEFAULT_DATARATE);
 
             int rtcAttempts = 0;
             bool rtcUpdated = false;
@@ -283,6 +296,10 @@ void LoRaManager::sendDelimitedPayload(
     unsigned long elapsedTime = millis() - setupStartTime;
     DEBUG_PRINTF("Tiempo transcurrido antes del envío LoRa: %lu ms\n", elapsedTime);
 
+    // VERIFICACIÓN CRÍTICA: Asegurar DR3 antes de cada transmisión
+    // Esto previene el error -1114 si el servidor intentó cambiar el DR
+    node.setDatarate(LoRa::DEFAULT_DATARATE);
+
     // Usar uplink() en lugar de sendReceive() para NO esperar ventanas RX
     // Esto reduce significativamente el tiempo de transmisión
     int16_t state = node.uplink(
@@ -295,7 +312,23 @@ void LoRaManager::sendDelimitedPayload(
     if (state == RADIOLIB_ERR_NONE) {
         DEBUG_PRINTLN("Transmisión exitosa (sin esperar downlink)");
     } else {
-        DEBUG_PRINTF("Error en transmisión: %d\n", state);
+        DEBUG_PRINTF("Error en transmisión: %d", state);
+
+        // Agregar descripción del error para mejor debugging
+        switch(state) {
+            case RADIOLIB_ERR_DWELL_TIME_EXCEEDED:
+                DEBUG_PRINTLN(" - Dwell time excedido (payload muy grande para el DR actual)");
+                break;
+            case RADIOLIB_ERR_INVALID_FREQUENCY:
+                DEBUG_PRINTLN(" - Frecuencia inválida");
+                break;
+            case RADIOLIB_ERR_TX_TIMEOUT:
+                DEBUG_PRINTLN(" - Timeout en transmisión");
+                break;
+            default:
+                DEBUG_PRINTLN("");
+                break;
+        }
 
         // Si es error de frecuencia, intentar reinicializar el radio
         if (state == RADIOLIB_ERR_INVALID_FREQUENCY) {

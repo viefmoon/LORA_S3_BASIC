@@ -11,7 +11,7 @@ namespace System {
     constexpr uint8_t CPU_FREQUENCY_MHZ = 40;
     constexpr uint32_t SERIAL_BAUD_RATE = 115200;
     constexpr uint32_t DEFAULT_TIME_TO_SLEEP = 30;
-    constexpr const char* DEFAULT_DEVICE_ID = "DEV01";
+    constexpr const char* DEFAULT_DEVICE_ID = "DEV02";
     constexpr const char* DEFAULT_STATION_ID = "ST001";
 
     constexpr uint16_t JSON_DOC_SIZE_SMALL = 300;
@@ -100,11 +100,52 @@ namespace LoRa {
     constexpr uint8_t DIO1_PIN = ::Pins::LoRaSPI::DIO1;
 
     constexpr const char* DEFAULT_JOIN_EUI = "00,00,00,00,00,00,00,00";
-    constexpr const char* DEFAULT_DEV_EUI = "63,66,e0,dc,66,04,2c,0d";
-    constexpr const char* DEFAULT_APP_KEY = "98,28,42,10,47,6b,15,e4,a2,78,7c,5f,9e,23,80,ec";
-    constexpr const char* DEFAULT_NWK_KEY = "3f,1e,71,0e,44,33,8d,f8,8c,41,d3,f2,d3,72,a0,d0";
+    constexpr const char* DEFAULT_DEV_EUI = "09,15,41,f8,97,29,05,aa";
+    constexpr const char* DEFAULT_APP_KEY = "81,c5,7b,02,11,26,b0,ef,94,52,71,be,78,d5,4d,60";
+    constexpr const char* DEFAULT_NWK_KEY = "cd,9f,84,3d,bc,de,e3,e5,a3,ba,ea,9b,ad,2a,f8,fc";
 
     constexpr uint8_t SUBBAND = 2;
+
+    /*
+     * Lista de Data Rates (DR) para LoRaWAN US915
+     *
+     * Cada DR define un conjunto específico de parámetros:
+     *   - SF (Spreading Factor): Cuanto mayor es, más alcance tiene pero menor velocidad de transmisión.
+     *   - BW (Bandwidth): Mayor ancho de banda significa mayor velocidad pero menor alcance.
+     *   - CR (Coding Rate): Relación de corrección de errores.
+     *   - Payload Máximo: Tamaño máximo de datos en bytes que se pueden enviar en una sola transmisión.
+     *
+     * NOTA: DR5, DR6 y DR7 no están definidos en US915.
+     *
+     * Índice | SF   | BW     | CR  | Payload Máximo | Comentario
+     * -------|------|--------|-----|----------------|------------------------------------
+     * DR0    | SF10 | 125kHz | 4/5 | 19 bytes       | Mayor alcance, menor velocidad.
+     * DR1    | SF9  | 125kHz | 4/5 | 61 bytes       | Menor alcance, más velocidad que DR0.
+     * DR2    | SF8  | 125kHz | 4/5 | 133 bytes      | Velocidad media, menor alcance que DR1.
+     * DR3    | SF7  | 125kHz | 4/5 | 250 bytes      | Mayor velocidad en 125kHz, menor alcance.
+     * DR4    | SF8  | 500kHz | 4/5 | 250 bytes      | Mayor BW para mejorar la velocidad.
+     * DR5    | N/A  | N/A    | N/A | No definido    | No definido en US915.
+     * DR6    | N/A  | N/A    | N/A | No definido    | No definido en US915.
+     * DR7    | N/A  | N/A    | N/A | No definido    | No definido en US915.
+     * DR8    | SF12 | 500kHz | 4/5 | 41 bytes       | Mayor alcance en 500kHz, menor velocidad.
+     * DR9    | SF11 | 500kHz | 4/5 | 117 bytes      | Más velocidad que DR8, menos alcance.
+     * DR10   | SF10 | 500kHz | 4/5 | 230 bytes      | Más velocidad que DR9.
+     * DR11   | SF9  | 500kHz | 4/5 | 230 bytes      | Velocidad media en 500kHz.
+     * DR12   | SF8  | 500kHz | 4/5 | 230 bytes      | Más velocidad que DR11.
+     * DR13   | SF7  | 500kHz | 4/5 | 230 bytes      | Mayor velocidad en 500kHz, menor alcance.
+     * DR14   | N/A  | N/A    | N/A | No definido    | No definido en US915.
+     *
+     * - DR0 a DR3 se usan para uplink en los 64 canales de 125kHz.
+     * - DR4 se usa para uplink en los 8 canales de 500kHz.
+     * - DR8 a DR13 se usan para downlink en los 8 canales de 500kHz.
+     * - El payload máximo puede verse afectado por la opción FOpt en el MAC layer.
+     *
+     * Uso recomendado:
+     *   LoRaManager::setDatarate(node, 3);  // DR3 = SF7BW125, buen balance velocidad/alcance
+     */
+
+    // Data Rate por defecto (DR3 = SF7BW125)
+    constexpr uint8_t DEFAULT_DATARATE = 3;
 }
 
 // =========================================================================
@@ -297,7 +338,7 @@ namespace DEFAULT_CONFIGS {
         {"R", "RTD_1",  RTD, false}, \
         {"D", "DS_1",   DS18B20, false}, \
         {"SH3", "SH3_1", SHT30, false}, \
-        {"MT05", "MT05_1", MT05S, true} \
+        {"MT05", "MT05_2", MT05S, true} \
     }
 
     #define DEFAULT_MODBUS_SENSOR_CONFIGS { \

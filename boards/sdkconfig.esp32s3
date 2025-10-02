@@ -1,0 +1,9 @@
+# RTC Clock Configuration for ESP32-S3
+# Use external 32kHz crystal for RTC slow clock source
+CONFIG_RTC_CLK_SRC_EXT_CRYS=y
+CONFIG_RTC_CLK_SRC_EXT_OSC=n
+CONFIG_RTC_CLK_SRC_INT_RC=n
+CONFIG_RTC_CLK_SRC_INT_8MD256=n
+
+# RTC Clock Calibration
+CONFIG_RTC_CLK_CAL_CYCLES=576

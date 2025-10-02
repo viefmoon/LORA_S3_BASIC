@@ -69,6 +69,7 @@ std::vector<SensorReading> normalReadings;
 
 SensorManager sensorManager;
 
+
 /**
  * @brief Inicializa el hardware y la configuración del sistema
  * @return true si la inicialización fue exitosa, false en caso de error
@@ -170,6 +171,9 @@ void setup() {
     // Incrementar contador de wakeups
     wakeupCount++;
     DEBUG_PRINTF("Wakeup #%lu\n", wakeupCount);
+
+    // Nota: El cristal externo de 32kHz está configurado mediante sdkconfig
+    // Ver: boards/sdkconfig.esp32s3 y platformio.ini
 
     SleepManager::handleWakeupCause(wokeFromConfigPin);
 
